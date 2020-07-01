@@ -170,7 +170,7 @@ assertThrows(() => { new Uint32Array(rab, 4); });
 
 // To use other TypedArray constructors with resizable buffers, first
 // `transfer` the resizable buffer to a fixed-length buffer.
-let ab = rab.transfer(rab, rab.byteLength);
+let ab = ResizableArrayBuffer.transfer(rab, rab.byteLength);
 let view = new Uint16Array(ab, 4, 32);
 ```
 
