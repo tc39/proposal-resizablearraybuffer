@@ -152,7 +152,7 @@ The _TypedArray_ (_buffer_, [, _byteOffset_ [, _length_ ] ] ) constructor is mod
 
 - If _buffer_ is a `ResizableArrayBuffer` or a `GrowableSharedArrayBuffer`, throw a TypeError unless either _byteOffset_ is not undefined and is not 0 and _length_ is not undefined.
 
-_TypedArray_s backed by `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` have the following modifications to its length getter on _TypedArray_.prototype:
+TypedArrays backed by `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` have the following modifications to its length getter on _TypedArray_.prototype:
 
 - If this buffer is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer`, return floor(buffer byte length / element size).
 
@@ -196,7 +196,7 @@ function derefPointerIntoWasmMemory(idx) {
 
 It also spurred proposals such as having a signal handler-like synchronous callback on growth events for wasm's JS API, which doesn't feel great due to the issues of signal handler re-entrancy being difficult to reason about.
 
-Having growable `ArrayBuffer`s and auto-tracking _TypedArray_s would solve this problem more cleanly.
+Having growable `ArrayBuffer`s and auto-tracking TypedArrays would solve this problem more cleanly.
 
 ### WebGPU buffers
 
@@ -208,9 +208,9 @@ Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize 
 
 - Both `ResizableArrayBuffer` and `GrowableSharedArrayBuffer` are designed to be direct buffers where the virtual memory is reserved for the address range but not backed by physical memory until needed.
 
-- _TypedArray_s that are backed by resizable and growable buffers have more complex, but similar-in-kind, logic to detachment checks. The performance expectation is that these _TypedArray_s will be slower than _TypedArray_s backed by fixed-size buffers.
+- TypedArrays that are backed by resizable and growable buffers have more complex, but similar-in-kind, logic to detachment checks. The performance expectation is that these TypedArrays will be slower than TypedArrays backed by fixed-size buffers.
 
-- _TypedArray_s that are backed by resizable and growable buffers are recommended to have a distinct hidden class from _TypedArray_s backed by fixed-size buffers for maintainability of security-sensitive fast paths. This unfortunately makes use sites polymorphic.
+- TypedArrays that are backed by resizable and growable buffers are recommended to have a distinct hidden class from TypedArrays backed by fixed-size buffers for maintainability of security-sensitive fast paths. This unfortunately makes use sites polymorphic.
 
 ## FAQ and design rationale tradeoffs
 
@@ -218,8 +218,8 @@ Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize 
 
 Retrofitting `ArrayBuffer` is hard because of both language and implementation concerns:
 
-1. _TypedArray_ views have particular offsets and lengths that would need to be updated. It is messy to determine what TAs' lengths should be updated. If growing, it seems like user intention needs to be taken into account, and those with explicitly provided lengths should not be updated. If shrinking, it seems like all views need to be updated. This would not only require tracking all created views but is not clean to reason about.
-1. Browsers and VMs have battle-hardened code paths around existing _TypedArray_s and `ArrayBuffer`s, as they are the most popular way to attack browsers. By introducing new types, we hope to leave those existing paths alone. Otherwise we'd need to audit all existing paths, of which there are many because of web APIs' use of buffers, to ensure they handle the possibility of growth and shrinking. This is scary and is likely a security bug farm.
+1. TypedArray views have particular offsets and lengths that would need to be updated. It is messy to determine what TAs' lengths should be updated. If growing, it seems like user intention needs to be taken into account, and those with explicitly provided lengths should not be updated. If shrinking, it seems like all views need to be updated. This would not only require tracking all created views but is not clean to reason about.
+1. Browsers and VMs have battle-hardened code paths around existing TypedArrays and `ArrayBuffer`s, as they are the most popular way to attack browsers. By introducing new types, we hope to leave those existing paths alone. Otherwise we'd need to audit all existing paths, of which there are many because of web APIs' use of buffers, to ensure they handle the possibility of growth and shrinking. This is scary and is likely a security bug farm.
 
 ### Why require maximum length?
 
