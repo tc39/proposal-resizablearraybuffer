@@ -167,6 +167,11 @@ assert(U32.length === 512);
 
 assertThrows(() => { new Uint32Array(rab, 4, 512); });
 assertThrows(() => { new Uint32Array(rab, 4); });
+
+// To use other TypedArray constructors with resizable buffers, first
+// `transfer` the resizable buffer to a fixed-length buffer.
+let ab = rab.transfer(rab, rab.byteLength);
+let view = new Uint16Array(ab, 4, 32);
 ```
 
 ## Motivation and use cases
@@ -186,7 +191,8 @@ This is an [open problem](https://github.com/WebAssembly/design/issues/1296) and
 let U8 = new Uint8Array(WebAssembly.Memory.buffer);
 
 function derefPointerIntoWasmMemory(idx) {
-  // Do we need to re-create U8 because memory grew?
+  // Do we need to re-create U8 because memory grew, causing the old buffer
+  // to detach?
   if (U8.length === 0) {
     U8 = new Uint8Array(WebAssembly.Memory.buffer);
   }
@@ -200,7 +206,7 @@ Having growable `ArrayBuffer`s and auto-tracking TypedArrays would solve this pr
 
 ### WebGPU buffers
 
-WebGPU would like to [repoint the same `ArrayBuffer` instances to different backing buffers](https://github.com/gpuweb/gpuweb/issues/747#issuecomment-642938376). This is important for performance during animations, as remaking `ArrayBuffer` instances multiple times per frame of animation stresses the GC.
+WebGPU would like to [repoint the same `ArrayBuffer` instances to different backing buffers](https://github.com/gpuweb/gpuweb/issues/747#issuecomment-642938376). This is important for performance during animations, as remaking `ArrayBuffer` instances multiple times per frame of animation incurs GC pressure and pauses.
 
 Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize + overwrite. Under the hood, browsers can implement WebGPU-vended `ResizableArrayBuffer`s as repointable without actually adding a repointable `ArrayBuffer` into the language.
 
@@ -211,6 +217,16 @@ Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize 
 - TypedArrays that are backed by resizable and growable buffers have more complex, but similar-in-kind, logic to detachment checks. The performance expectation is that these TypedArrays will be slower than TypedArrays backed by fixed-size buffers.
 
 - TypedArrays that are backed by resizable and growable buffers are recommended to have a distinct hidden class from TypedArrays backed by fixed-size buffers for maintainability of security-sensitive fast paths. This unfortunately makes use sites polymorphic.
+
+## Security
+
+`ArrayBuffer`s and TypedArrays are one of the most common attack vectors for web browsers. Resizability adds non-zero security risk to the platform in that bugs in bounds checking code for resizable buffers may be easily exploited.
+
+This security risk is intrinsic to the proposal and is not entirely eliminable. This proposal tries to mitigate with the following design choices:
+
+- Introduce new buffer types instead of retrofitting existing buffer types so code paths can be kept separate
+- Make the new types only usable with auto-tracking TypedArrays
+- Make in-place implementation always possible to limit data pointer moves
 
 ## FAQ and design rationale tradeoffs
 
@@ -225,6 +241,8 @@ Retrofitting `ArrayBuffer` is hard because of both language and implementation c
 
 The API is designed to be implementable as an in-place growth. Non in-place growth (i.e. realloc) semantics presents more challenges for implementation as well as a bigger attack surface. In-place growth has the guarantee that the data pointer of the backing store does not move.
 
+Under the hood, this means the backing store pointer can be made immovable. Note that this immovability of the data pointer is unobservable from within JS. For `ResizableArrayBuffer`, it would be conformant, but possibly undesirable, to implement growth and shrinking as realloc. For `GrowableSharedArrayBuffer`, due to memory model constraints, it is unlikely that a realloc implementation is possible.
+
 ### Why can't `GrowableSharedArrayBuffer` shrink?
 
 Shrinking shared memory is scary and seems like a bad time.
@@ -233,10 +251,24 @@ Shrinking shared memory is scary and seems like a bad time.
 
 We'll probably make `byteLength` accesses synchronize-with growth events. Will ultimately converge with wasm here.
 
+### Is `transfer` realloc?
+
+Yes, with detach semantics.
+
+## Open questions
+
+### Should `resize(0)` be allowed?
+
+Currently a length of 0 always denotes a detached buffer. Are there use cases for `resize(0)`? Should it mean detach if allowed? Or should the buffer be allowed to grow again afterwards?
+
+### Should there be a `transferResizable()` that reallocs into another `ResizableArrayBuffer`?
+
+Are there compelling use cases for this?
+
 ## History and acknowledgment
 
 Thanks to:
-  - @lukewagner for the OG proposal https://gist.github.com/lukewagner/2735af7eea411e18cf20
+  - @lukewagner for the original straw-person https://gist.github.com/lukewagner/2735af7eea411e18cf20
   - @domenic for https://github.com/domenic/proposal-arraybuffer-transfer
   - @ulan for discussion and guidance of the implementation of ArrayBuffers in V8 and Chrome
   - @kainino0x for discussion of the WebGPU use case
