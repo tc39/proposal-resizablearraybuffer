@@ -182,9 +182,7 @@ Growing a new buffer right now requires allocating a new buffer and copying. Not
 
 ### Sync up capability with WebAssembly memory.grow
 
-WebAssembly memory can grow. Every time it does, vends a new `ArrayBuffer` instance and detaches the old one. Any JS-side "pointers" into wasm memory would need to be updated when a grow happens. Imagine something like the following:
-
-This is an [open problem](https://github.com/WebAssembly/design/issues/1296) and currently requires polling, which is super slow:
+WebAssembly memory can grow. Every time it does, wasm vends a new `ArrayBuffer` instance and detaches the old one. Any JS-side "pointers" into wasm memory would need to be updated when a grow happens. This is an [open problem](https://github.com/WebAssembly/design/issues/1296) and currently requires polling, which is super slow:
 
 ```javascript
 // The backing buffer gets detached on every grow in wasm!
