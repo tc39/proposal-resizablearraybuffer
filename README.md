@@ -1,7 +1,9 @@
 # In-Place Resizable and Growable `ArrayBuffer`s
 
 Stage: 0
+
 Author: Shu-yu Guo (@syg)
+
 Champion: Shu-yu Guo (@syg)
 
 ## Introduction
