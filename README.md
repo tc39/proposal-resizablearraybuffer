@@ -10,6 +10,40 @@ Champion: Shu-yu Guo (@syg)
 
 `ArrayBuffer`s have enabled in-memory handling of binary data and have enjoyed great success. This proposal adds new expressivity with two new types, `ResizableArrayBuffer` and `GrowableSharedArrayBuffer`, that allow in-place growth and shrinking of buffers. The `transfer` method is also re-introduced here as a standard way to detach `ArrayBuffer`s, perform zero-copy moves, and to "fix" `ResizableArrayBuffer` instances to `ArrayBuffer` instances.
 
+## Motivation and use cases
+
+### Better memory management
+
+Growing a new buffer right now requires allocating a new buffer and copying. Not only is this inefficient, it needlessly fragments the address space on 32-bit systems.
+
+### Sync up capability with WebAssembly memory.grow
+
+WebAssembly memory can grow. Every time it does, wasm vends a new `ArrayBuffer` instance and detaches the old one. Any JS-side "pointers" into wasm memory would need to be updated when a grow happens. This is an [open problem](https://github.com/WebAssembly/design/issues/1296) and currently requires polling, which is super slow:
+
+```javascript
+// The backing buffer gets detached on every grow in wasm!
+let U8 = new Uint8Array(WebAssembly.Memory.buffer);
+
+function derefPointerIntoWasmMemory(idx) {
+  // Do we need to re-create U8 because memory grew, causing the old buffer
+  // to detach?
+  if (U8.length === 0) {
+    U8 = new Uint8Array(WebAssembly.Memory.buffer);
+  }
+  doSomethingWith(U8[idx]);
+}
+```
+
+It also spurred proposals such as having a signal handler-like synchronous callback on growth events for wasm's JS API, which doesn't feel great due to the issues of signal handler re-entrancy being difficult to reason about.
+
+Having growable `ArrayBuffer`s and auto-tracking TypedArrays would solve this problem more cleanly.
+
+### WebGPU buffers
+
+WebGPU would like to [repoint the same `ArrayBuffer` instances to different backing buffers](https://github.com/gpuweb/gpuweb/issues/747#issuecomment-642938376). This is important for performance during animations, as remaking `ArrayBuffer` instances multiple times per frame of animation incurs GC pressure and pauses.
+
+Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize + overwrite. Under the hood, browsers can implement WebGPU-vended `ResizableArrayBuffer`s as repointable without actually adding a repointable `ArrayBuffer` into the language.
+
 ## Proposal
 
 ### `ResizableArrayBuffer`
@@ -142,71 +176,58 @@ class ArrayBuffer {
 }
 ```
 
-### Modifications to the _TypedArray_ constructor
+### Modifications to _TypedArray_
 
-TypedArrays are extended to make use of these buffers. When a TypedArray is backed by a resizable buffer, its byte offset is always 0 and its length always automatically tracks the byte length of the underlying buffer.
-
-These new buffers can only be used with these new kinds of TypedArrays.
+TypedArrays are extended to make use of these buffers. When a TypedArray is backed by a resizable buffer, its byte offset length may automatically change if the backing buffer is resized.
 
 The _TypedArray_ (_buffer_, [, _byteOffset_ [, _length_ ] ] ) constructor is modified as follows:
 
-- If _buffer_ is a `ResizableArrayBuffer` or a `GrowableSharedArrayBuffer`, throw a TypeError unless either _byteOffset_ is not undefined and is not 0 and _length_ is not undefined.
+- If _buffer_ is a `ResizableArrayBuffer` or a `GrowableSharedArrayBuffer`, if the _length_ is `undefined`, then the constructed TA automatically tracks the length of the backing buffer.
 
-TypedArrays backed by `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` have the following modifications to its length getter on _TypedArray_.prototype:
+The length getter on _TypedArray_.prototype is modified as follows:
 
-- If this buffer is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer`, return floor(buffer byte length / element size).
+- If this TA is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` and is automatically tracking the length of the backing buffer, then return floor((buffer byte length - byte offset) / element size).
+- If this TA is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` and the length is out of bounds, then return 0.
+
+All methods and internal methods that access indexed properties on TypedArrays are modified as follow:
+
+- If this TA is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` and if the translated byte index on the backing buffer is out of bounds, or if the translated byte length is out of bounds, throw a TypeError.
+
+This change generalizes the detachment check: if a fixed-length window on a backing buffer becomes out of bounds, either in whole or in part, due to resizing, treat it like a detached buffer.
 
 An example:
 
 ```javascript
 let rab = new ResizableArrayBuffer(1024, 1024 ** 2);
-let U32 = new Uint32Array(rab);
-assert(U32.length === 256);
+// 0 offset, auto length
+let U32a = new Uint32Array(rab);
+assert(U32a.length === 256); // (1024 - 0) / 4
 rab.resize(1024 * 2);
-assert(U32.length === 512);
+assert(U32a.length === 512); // (2048 - 0) / 4
 
-assertThrows(() => { new Uint32Array(rab, 4, 512); });
-assertThrows(() => { new Uint32Array(rab, 4); });
+// Non-0 offset, auto length
+let U32b = new Uint32Array(rab, 256);
+assert(U32b.length === 448); // (2048 - 256) / 4
+rab.resize(1024);
+assert(U32b.length === 192); // (1024 - 256) / 4
 
-// To use other TypedArray constructors with resizable buffers, first
-// `transfer` the resizable buffer to a fixed-length buffer.
-let ab = ResizableArrayBuffer.transfer(rab, rab.byteLength);
-let view = new Uint16Array(ab, 4, 32);
+// Non-0 offset, fixed length
+let U32c = new Uint32Array(rab, 128, 4);
+assert(U32c.length === 4);
+rab.resize(1024 * 2);
+assert(U32c.length === 4);
+
+// If a resize makes any accessible part of a TA OOB, the TA acts like
+// it's been detached.
+rab.resize(256);
+assertThrows(() => U32b[0]);
+assert(U32b.length === 0);
+rab.resize(132);
+// U32c can address rab[128] to rab[144]. Being partially OOB still makes
+// it act like it's been detached.
+assertThrows(() => U32c[0]);
+assert(U32c.length === 0);
 ```
-
-## Motivation and use cases
-
-### Better memory management
-
-Growing a new buffer right now requires allocating a new buffer and copying. Not only is this inefficient, it needlessly fragments the address space on 32-bit systems.
-
-### Sync up capability with WebAssembly memory.grow
-
-WebAssembly memory can grow. Every time it does, wasm vends a new `ArrayBuffer` instance and detaches the old one. Any JS-side "pointers" into wasm memory would need to be updated when a grow happens. This is an [open problem](https://github.com/WebAssembly/design/issues/1296) and currently requires polling, which is super slow:
-
-```javascript
-// The backing buffer gets detached on every grow in wasm!
-let U8 = new Uint8Array(WebAssembly.Memory.buffer);
-
-function derefPointerIntoWasmMemory(idx) {
-  // Do we need to re-create U8 because memory grew, causing the old buffer
-  // to detach?
-  if (U8.length === 0) {
-    U8 = new Uint8Array(WebAssembly.Memory.buffer);
-  }
-  doSomethingWith(U8[idx]);
-}
-```
-
-It also spurred proposals such as having a signal handler-like synchronous callback on growth events for wasm's JS API, which doesn't feel great due to the issues of signal handler re-entrancy being difficult to reason about.
-
-Having growable `ArrayBuffer`s and auto-tracking TypedArrays would solve this problem more cleanly.
-
-### WebGPU buffers
-
-WebGPU would like to [repoint the same `ArrayBuffer` instances to different backing buffers](https://github.com/gpuweb/gpuweb/issues/747#issuecomment-642938376). This is important for performance during animations, as remaking `ArrayBuffer` instances multiple times per frame of animation incurs GC pressure and pauses.
-
-Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize + overwrite. Under the hood, browsers can implement WebGPU-vended `ResizableArrayBuffer`s as repointable without actually adding a repointable `ArrayBuffer` into the language.
 
 ## Implementation
 
@@ -214,7 +235,7 @@ Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize 
 
 - TypedArrays that are backed by resizable and growable buffers have more complex, but similar-in-kind, logic to detachment checks. The performance expectation is that these TypedArrays will be slower than TypedArrays backed by fixed-size buffers.
 
-- TypedArrays that are backed by resizable and growable buffers are recommended to have a distinct hidden class from TypedArrays backed by fixed-size buffers for maintainability of security-sensitive fast paths. This unfortunately makes use sites polymorphic.
+- TypedArrays that are backed by resizable and growable buffers are recommended to have a distinct hidden class from TypedArrays backed by fixed-size buffers for maintainability of security-sensitive fast paths. This unfortunately makes use sites polymorphic. The slowdown from the polymorphism needs to be benchmarked.
 
 ## Security
 
@@ -223,7 +244,7 @@ Having a `ResizableArrayBuffer` would let WebGPU explain repointing as a resize 
 This security risk is intrinsic to the proposal and is not entirely eliminable. This proposal tries to mitigate with the following design choices:
 
 - Introduce new buffer types instead of retrofitting existing buffer types so code paths can be kept separate
-- Make the new types only usable with auto-tracking TypedArrays
+- Make partially OOB TypedArrays act like their buffers are detached instead of auto-updating the length.
 - Make in-place implementation always possible to limit data pointer moves
 
 ## FAQ and design rationale tradeoffs
