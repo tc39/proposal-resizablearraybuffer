@@ -54,6 +54,8 @@ class ResizableArrayBuffer {
   //
   // The ResizableArrayBuffer can only grow up to the provided
   // maximumByteLength.
+  //
+  // Throws a RangeError if maximumByteLength is not finite.
   constructor(byteLength, maximumByteLength);
 
   // Returns a *non*-resizable ArrayBuffer with the same byte content
@@ -125,6 +127,8 @@ class GrowableSharedArrayBuffer {
   //
   // The GrowableSharedArrayBuffer can only grow up to the provided
   // maximumByteLength.
+  //
+  // Throws a RangeError if maximumByteLength is not finite.
   constructor(byteLength, maximumByteLength);
 
   // Grows the buffer.
