@@ -66,9 +66,9 @@ class ResizableArrayBuffer {
   //
   // Designed to be implementable as a copy-free move or a realloc.
   //
-  // Throws a TypeError if resizableAB is not a ResizableArrayBuffer.
+  // Throws a TypeError if the `this` value is not a ResizableArrayBuffer.
   // Throws a RangeError unless 0 < newByteLength.
-  static transfer(resizableAB, newByteLength);
+  transfer(newByteLength);
 
   // Resizes the buffer.
   //
@@ -109,7 +109,7 @@ rab.resize(rab.byteLength * 2);
 assert(rab.byteLength === 1024 * 2);
 
 // Transfer the first 1024 bytes.
-let ab = ResizableArrayBuffer.transfer(rab, 1024);
+let ab = rab.transfer(1024);
 // rab is now detached
 assert(rab.byteLength === 0);
 assert(rab.maximumByteLength === 0);
@@ -164,7 +164,7 @@ Add a `transfer` method to `ArrayBuffer` for symmetry:
 class ArrayBuffer {
   // ...
 
-  // Returns a ArrayBuffer with the same byte content
+  // Returns an ArrayBuffer with the same byte content
   // at this buffer for [0, min(this.byteLength, newByteLength)],
   // then detaches this buffer.
   //
@@ -172,9 +172,9 @@ class ArrayBuffer {
   //
   // Designed to be implementable as a copy-free move or a realloc.
   //
-  // Throws a TypeError if arrayBuffer is not an ArrayBuffer.
+  // Throws a TypeError if the `this` value is not an ArrayBuffer.
   // Throws a RangeError unless 0 < newByteLength < this.byteLength.
-  static transfer(arrayBuffer, newByteLength);
+  transfer(newByteLength);
 
   // ...
 }
