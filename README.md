@@ -64,10 +64,12 @@ class ResizableArrayBuffer {
   //
   // Any new memory is zeroed.
   //
+  // If newByteLength is undefined, it is set to this.bytelength.
+  //
   // Designed to be implementable as a copy-free move or a realloc.
   //
   // Throws a TypeError if the `this` value is not a ResizableArrayBuffer.
-  // Throws a RangeError unless 0 < newByteLength.
+  // Throws a RangeError unless 0 <= newByteLength.
   transfer(newByteLength);
 
   // Resizes the buffer.
@@ -78,7 +80,7 @@ class ResizableArrayBuffer {
   // Shrinks are also designed to be in-place, with a length change and
   // no realloc.
   //
-  // Throws a RangeError unless 1 < newByteLength < this.maximumByteLength.
+  // Throws a RangeError unless 0 < newByteLength < this.maximumByteLength.
   //
   // Can throw OOM.
   resize(newByteLength);
@@ -170,10 +172,12 @@ class ArrayBuffer {
   //
   // Any new memory is zeroed.
   //
+  // If newByteLength is undefined, it is set to this.bytelength.
+  //
   // Designed to be implementable as a copy-free move or a realloc.
   //
   // Throws a TypeError if the `this` value is not an ArrayBuffer.
-  // Throws a RangeError unless 0 < newByteLength < this.byteLength.
+  // Throws a RangeError unless 0 <= newByteLength.
   transfer(newByteLength);
 
   // ...
