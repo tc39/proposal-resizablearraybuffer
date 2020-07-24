@@ -80,7 +80,7 @@ class ResizableArrayBuffer {
   // Shrinks are also designed to be in-place, with a length change and
   // no realloc.
   //
-  // Throws a RangeError unless 0 < newByteLength < this.maximumByteLength.
+  // Throws a RangeError unless 0 < newByteLength <= this.maximumByteLength.
   //
   // Can throw OOM.
   resize(newByteLength);
@@ -142,7 +142,7 @@ class GrowableSharedArrayBuffer {
   // allow for shared memory.
   //
   // Throws a RangeError unless
-  // this.byteLength < newByteLength < this.maximumByteLength.
+  // this.byteLength <= newByteLength <= this.maximumByteLength.
   //
   // Can throw OOM.
   grow(newByteLength);
