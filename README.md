@@ -1,6 +1,6 @@
 # In-Place Resizable and Growable `ArrayBuffer`s
 
-Stage: 0
+Stage: 1
 
 Author: Shu-yu Guo (@syg)
 
