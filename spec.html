@@ -38,9 +38,9 @@
     </emu-alg>
   </emu-clause>
 
+  <ins class="block">
   <emu-clause id="sec-arraybufferlength" aoid="ArrayBufferByteLength">
     <h1>ArrayBufferByteLength ( _arrayBuffer_ )</h1>
-    <p><ins>This is a new section.</ins></p>
     <p>The abstract operation ArrayBufferByteLength takes argument _arrayBuffer_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: Type(_arrayBuffer_) is Object and it has an [[ArrayBufferData]] internal slot.
@@ -54,7 +54,6 @@
 
   <emu-clause id="sec-arraybufferisresizableorgrowable" aoid="ArrayBufferIsResizable">
     <h1>ArrayBufferIsResizable ( _arrayBuffer_ )</h1>
-    <p><ins>This is a new section.</ins></p>
     <p>The abstract operation ArrayBufferIsResizable takes argument _arrayBuffer_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: Type(_arrayBuffer_) is Object and it has an [[ArrayBufferData]] internal slot.
@@ -62,11 +61,12 @@
       1. Return *false*.
     </emu-alg>
   </emu-clause>
+  </ins>
 </emu-clause>
 
+<ins class="block">
 <emu-clause id="sec-resizablearraybuffer-objects">
   <h1>ResizableArrayBuffer Objects</h1>
-  <p><ins>This is a new section.</ins></p>
 
   <emu-clause id="sec-resizablearraybuffer-constructor">
     <h1>The ResizableArrayBuffer Constructor</h1>
@@ -214,6 +214,7 @@
     </emu-clause>
   </emu-clause>
 </emu-clause>
+</ins>
 
 <emu-clause id="sec-abstract-operations-for-sharedarraybuffer-objects-mods">
   <h1>Modifications to Abstract Operations for SharedArrayBuffer Objects</h1>
@@ -246,9 +247,9 @@
   </emu-clause>
 </emu-clause>
 
+<ins class="block">
 <emu-clause id="sec-growablesharedarraybuffer-objects">
   <h1>GrowableSharedArrayBuffer Objects</h1>
-  <p><ins>This is a new section.</ins></p>
 
   <emu-clause id="sec-growablesharedarraybuffer-constructor">
     <h1>The GrowableSharedArrayBuffer Constructor</h1>
@@ -372,6 +373,7 @@
     </emu-clause>
   </emu-clause>
 </emu-clause>
+</ins>
 
 <emu-clause id="sec-properties-of-the-arraybuffer-prototype-object-mods">
   <h1>Modifications to Properties of the ArrayBuffer Prototype Object</h1>
@@ -407,9 +409,9 @@
     </emu-alg>
   </emu-clause>
 
+  <ins class="block">
   <emu-clause id="sec-arraybuffer.prototype.transfer">
     <h1>ArrayBuffer.prototype.transfer ( [ _newLength_ ] )</h1>
-    <p><ins>This is a new section.</ins></p>
     <p>The following steps are taken:</p>
     <emu-alg>
       1. Let _O_ be the *this* value.
@@ -434,6 +436,7 @@
       1. Return _new_.
     </emu-alg>
   </emu-clause>
+  </ins>
 </emu-clause>
 
 <emu-clause id="sec-integer-indexed-exotic-objects-mods">
@@ -471,9 +474,9 @@
     </emu-alg>
   </emu-clause>
 
+  <ins class="block">
   <emu-clause id="sec-integerindexedobjectbytelength" aoid="IntegerIndexedObjectByteLength">
     <h1>IntegerIndexedObjectByteLength ( _O_ )</h1>
-    <p><ins>This is a new section.</ins></p>
     <p>The abstract operation IntegerIndexedObjectByteLength takes arguments _O_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
@@ -485,7 +488,6 @@
 
   <emu-clause id="sec-integerindexedobjectlength" aoid="IntegerIndexedObjectLength">
     <h1>IntegerIndexedObjectLength ( _O_ )</h1>
-    <p><ins>This is a new section.</ins></p>
     <p>The abstract operation IntegerIndexedObjectLength takes arguments _O_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
@@ -504,8 +506,7 @@
 
   <emu-clause id="sec-checkintegerindexedobjectoutofbounds" aoid="CheckIntegerIndexedObjectOutOfBounds">
     <h1>CheckIntegerIndexedObjectOutOfBounds ( _O_ )</h1>
-    <p><ins>This is a new section.</ins></p>
-    <p>The abstract operation DetachIntegerIndexedObjectOutOfBounds takes arguments _O_. It checks if any part of the underlying viewed buffer is out of bounds, and marks the Integer-Indexed exotic object if so. Once an Integer-Indexed object is marked out of bounds, it remains out of bounds. It performs the following steps when called:</p>
+    <p>The abstract operation CheckIntegerIndexedObjectOutOfBounds takes arguments _O_. It checks if any part of the underlying viewed buffer is out of bounds, and marks the Integer-Indexed exotic object if so. Once an Integer-Indexed object is marked out of bounds, it remains out of bounds. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. If _O_.[[ArrayLength]] is ~oob~, return *true*.
@@ -523,6 +524,7 @@
       1. Return *false*.
     </emu-alg>
   </emu-clause>
+  </ins>
 </emu-clause>
 
 <emu-clause id="sec-typedarray-objects-mods">
@@ -744,9 +746,9 @@
   <emu-clause id="sec-abstract-operations-for-dataview-objects-mods">
     <h1>Modifications to Abstract Operations For DataView Objects</h1>
 
+    <ins class="block">
     <emu-clause id="sec-getviewbytelength" aoid="GetViewByteLength">
       <h1>GetViewByteLength ( _view_ )</h1>
-      <p><ins>This is a new section.</ins></p>
       <p>The abstract operation GetViewByteLength takes argument _view_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
@@ -757,9 +759,8 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-viewoutofbounds" aoid="ViewOutOfBounds">
+    <emu-clause id="sec-checkviewoutofbounds" aoid="CheckViewOutOfBounds">
       <h1>CheckViewOutOfBounds ( _view_ )</h1>
-      <p><ins>This is a new section.</ins></p>
       <p>The abstract operation CheckViewOutOfBounds takes argument _view_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
@@ -773,6 +774,7 @@
         1. Return *false*.
       </emu-alg>
     </emu-clause>
+    </ins>
 
     <emu-clause id="sec-getviewvalue" aoid="GetViewValue">
       <h1>GetViewValue ( _view_, _requestIndex_, _isLittleEndian_, _type_ )</h1>
