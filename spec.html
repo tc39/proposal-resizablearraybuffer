@@ -465,8 +465,8 @@
       1. Assert: Type(_index_) is Number.
       1. If ! IsInteger(_index_) is *false*, return *false*.
       1. If _index_ is *-0*, return *false*.
+      1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_O_) is *true*, return *false*.</ins>
       1. If _index_ &lt; 0 or _index_ &ge; <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_)</ins>, return *false*.
-      1. <ins>If IntegerIndexedObjectOutOfBounds(_O_) is *true*, return *false*.</ins>
       1. Return *true*.
     </emu-alg>
   </emu-clause>
@@ -489,8 +489,9 @@
     <p>The abstract operation IntegerIndexedObjectLength takes arguments _O_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
+      1. If CheckIntegerIndexedObjectOutOfBounds(_O_) is *true*, return *+0*.
+      1. Assert: _O_.[[ArrayLength]] is not ~oob~.
       1. If _O_.[[ArrayLength]] is not ~auto~, return _O_.[[ArrayLength]].
-      1. If IntegerIndexedObjectOutOfBounds(_O_), return *+0*.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. Assert: ! RequireInternal(_buffer_, [[ArrayBufferMaxByteLength]]) is *true*.
       1. Let _bufferByteLength_ be _buffer_.[[ArrayBufferByteLength]].
@@ -501,12 +502,13 @@
     </emu-alg>
   </emu-clause>
 
-  <emu-clause id="sec-integerindexedoutofbounds" aoid="IntegerIndexedObjectOutOfBounds">
-    <h1>IntegerIndexedObjectOutOfBounds ( _O_ )</h1>
+  <emu-clause id="sec-checkintegerindexedobjectoutofbounds" aoid="CheckIntegerIndexedObjectOutOfBounds">
+    <h1>CheckIntegerIndexedObjectOutOfBounds ( _O_ )</h1>
     <p><ins>This is a new section.</ins></p>
-    <p>The abstract operation IntegerIndexedObjectOutOfBounds takes arguments _O_. It returns whether any part of the underlying viewed buffer is out of bounds. It performs the following steps when called:</p>
+    <p>The abstract operation DetachIntegerIndexedObjectOutOfBounds takes arguments _O_. It checks if any part of the underlying viewed buffer is out of bounds, and marks the Integer-Indexed exotic object if so. Once an Integer-Indexed object is marked out of bounds, it remains out of bounds. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
+      1. If _O_.[[ArrayLength]] is ~oob~, return *true*.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. Let _bufferByteLength_ be _buffer_.[[ArrayBufferByteLength]].
       1. Let _byteOffsetStart_ be _O_.[[ByteOffset]].
@@ -515,7 +517,9 @@
       1. Else,
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
         1. Let _byteOffsetEnd_ be _O_.[[ArrayLength]] &times; _elementSize_.
-      1. If _byteOffsetStart_ &ge; _bufferByteLength_ or _byteOffsetEnd_ &ge; _bufferByteLength_, return *true*.
+      1. If _byteOffsetStart_ &ge; _bufferByteLength_ or _byteOffsetEnd_ &ge; _bufferByteLength_, then
+        1. Set _O_.[[ArrayLength]] to ~oob~.
+      1. If _O_.[[ArrayLength]] is ~oob~, return *true*.
       1. Return *false*.
     </emu-alg>
   </emu-clause>
@@ -535,7 +539,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If IntegerIndexedObjectOutOfBounds(_O_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_O_) is *true*, throw a *TypeError* exception.</ins>
         1. Return _buffer_.
       </emu-alg>
     </emu-clause>
@@ -549,7 +553,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return 0.
-        1. <ins>If IntegerIndexedObjectOutOfBounds(_O_) is *true*, return *+0*.</ins>
+        1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_O_) is *true*, return *+0*.</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>IntegerIndexedObjectByteLength(_O_)</ins>.
         1. Return _size_.
       </emu-alg>
@@ -564,7 +568,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return 0.
-        1. <ins>If IntegerIndexedObjectOutOfBounds(_O_) is *true*, return *+0*.</ins>
+        1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_O_) is *true*, return *+0*.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
         1. Return _offset_.
       </emu-alg>
@@ -597,11 +601,11 @@
         1. If _targetOffset_ &lt; 0, throw a *RangeError* exception.
         1. Let _targetBuffer_ be _target_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_targetBuffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If IntegerIndexedObjectOutOfBounds(_target_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_target_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _targetLength_ be <del>_target_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_target_)</ins>.
         1. Let _srcBuffer_ be _typedArray_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_srcBuffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If IntegerIndexedObjectOutOfBounds(_typedArray_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_typedArray_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _targetName_ be the String value of _target_.[[TypedArrayName]].
         1. Let _targetType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _targetName_.
         1. Let _targetElementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _targetName_.
@@ -674,7 +678,7 @@
         1. Else,
           1. Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).
           1. If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.
-          1. <ins>If IntegerIndexedObjectOutOfBounds(_srcArray_) is *true*, throw a *TypeError* exception.</ins>
+          1. <ins>If CheckIntegerIndexedObjectOutOfBounds(_srcArray_) is *true*, throw a *TypeError* exception.</ins>
           1. If _srcArray_.[[ContentType]] is not equal to _O_.[[ContentType]], throw a *TypeError* exception.
           1. Let _srcByteIndex_ be _srcByteOffset_.
           1. Let _targetByteIndex_ be 0.
@@ -746,6 +750,7 @@
       <p>The abstract operation GetViewByteLength takes argument _view_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
+        1. Assert: _view_.[[ByteLength]] is not ~oob~.
         1. If _view_.[[ByteLength]] is not ~auto~, then return _view_.[[ByteLength]].
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. Return ArrayBufferByteLength(_buffer_).
@@ -753,15 +758,18 @@
     </emu-clause>
 
     <emu-clause id="sec-viewoutofbounds" aoid="ViewOutOfBounds">
-      <h1>ViewOutOfBounds ( _view_ )</h1>
+      <h1>CheckViewOutOfBounds ( _view_ )</h1>
       <p><ins>This is a new section.</ins></p>
-      <p>The abstract operation ViewOutOfBounds takes argument _view_. It performs the following steps when called:</p>
+      <p>The abstract operation CheckViewOutOfBounds takes argument _view_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
+        1. If _view_.[[ByteLength]] is ~oob~, return *true*.
         1. Let _byteLength_ be GetViewByteLength(_view_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. Let _bufferByteLength_ be ArrayBufferByteLength(_buffer_).
-        1. If _view_.[[ByteOffset]] + _byteLength_ &gt; _bufferByteLength_, return *true*.
+        1. If _view_.[[ByteOffset]] + _byteLength_ &gt; _bufferByteLength_, then
+          1. Set _view_.[[ByteLength]] to ~oob~.
+        1. If _view_.[[ByteLength]] is ~oob~, return *true*.
         1. Return *false*.
       </emu-alg>
     </emu-clause>
@@ -776,7 +784,7 @@
         1. Set _isLittleEndian_ to ! ToBoolean(_isLittleEndian_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If ViewOutOfBounds(_view_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckViewOutOfBounds(_view_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_)</ins>.
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for Element Type _type_.
@@ -798,7 +806,7 @@
         1. Set _isLittleEndian_ to ! ToBoolean(_isLittleEndian_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If ViewOutOfBounds(_view_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckViewOutOfBounds(_view_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_)</ins>.
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for Element Type _type_.
@@ -852,7 +860,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If ViewOutOfBounds(_O_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckViewOutOfBounds(_O_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>GetViewByteLength(_O_)</ins>.
         1. Return _size_.
       </emu-alg>
@@ -867,7 +875,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>If ViewOutOfBounds(_O_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If CheckViewOutOfBounds(_O_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
         1. Return _offset_.
       </emu-alg>
