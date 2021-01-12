@@ -6,7 +6,7 @@
 <pre class=metadata>
   title: ResizableArrayBuffer and GrowableSharedArrayBuffer
   status: proposal
-  stage: 1
+  stage: 2
   location: https://github.com/tc39/proposal-resizablearraybuffer
   copyright: false
   contributors: Shu-yu Guo
@@ -493,7 +493,6 @@
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. If CheckIntegerIndexedObjectOutOfBounds(_O_) is *true*, return *+0*.
-      1. Assert: _O_.[[ArrayLength]] is not ~oob~.
       1. If _O_.[[ArrayLength]] is not ~auto~, return _O_.[[ArrayLength]].
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. Assert: ! RequireInternal(_buffer_, [[ArrayBufferMaxByteLength]]) is *true*.
@@ -510,8 +509,6 @@
     <p>The abstract operation CheckIntegerIndexedObjectOutOfBounds takes arguments _O_. It checks if any part of the underlying viewed buffer is out of bounds, and marks the Integer-Indexed exotic object if so. Once an Integer-Indexed object is marked out of bounds, it remains out of bounds. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
-      1. Assert: Both _O_.[[ArrayLength]] and _O_.[[ByteLength]] are ~oob~ or neither is ~oob~.
-      1. If _O_.[[ArrayLength]] is ~oob~, return *true*.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. Let _bufferByteLength_ be _buffer_.[[ArrayBufferByteLength]].
       1. Let _byteOffsetStart_ be _O_.[[ByteOffset]].
@@ -520,10 +517,7 @@
       1. Else,
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
         1. Let _byteOffsetEnd_ be _O_.[[ArrayLength]] &times; _elementSize_.
-      1. If _byteOffsetStart_ &ge; _bufferByteLength_ or _byteOffsetEnd_ &ge; _bufferByteLength_, then
-        1. Set _O_.[[ArrayLength]] to ~oob~.
-        1. Set _O_.[[ByteLength]] to ~oob~.
-      1. If _O_.[[ArrayLength]] is ~oob~, return *true*.
+      1. If _byteOffsetStart_ &ge; _bufferByteLength_ or _byteOffsetEnd_ &ge; _bufferByteLength_, then return *true*.
       1. Return *false*.
     </emu-alg>
   </emu-clause>
@@ -754,7 +748,6 @@
       <p>The abstract operation GetViewByteLength takes argument _view_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
-        1. Assert: _view_.[[ByteLength]] is not ~oob~.
         1. If _view_.[[ByteLength]] is not ~auto~, then return _view_.[[ByteLength]].
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. Return ArrayBufferByteLength(_buffer_).
@@ -766,13 +759,10 @@
       <p>The abstract operation CheckViewOutOfBounds takes argument _view_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
-        1. If _view_.[[ByteLength]] is ~oob~, return *true*.
         1. Let _byteLength_ be GetViewByteLength(_view_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. Let _bufferByteLength_ be ArrayBufferByteLength(_buffer_).
-        1. If _view_.[[ByteOffset]] + _byteLength_ &gt; _bufferByteLength_, then
-          1. Set _view_.[[ByteLength]] to ~oob~.
-        1. If _view_.[[ByteLength]] is ~oob~, return *true*.
+        1. If _view_.[[ByteOffset]] + _byteLength_ &gt; _bufferByteLength_, then return *true*.
         1. Return *false*.
       </emu-alg>
     </emu-clause>

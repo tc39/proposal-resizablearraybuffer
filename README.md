@@ -203,6 +203,8 @@ All methods and internal methods that access indexed properties on TypedArrays a
 
 This change generalizes the detachment check: if a fixed-length window on a backing buffer becomes out of bounds, either in whole or in part, due to resizing, treat it like a detached buffer.
 
+This generalized bounds check is performed on every index access on TypedArrays backed by `ResizableArrayBuffer` and `GrowableSharedArrayBuffer`.
+
 An example:
 
 ```javascript
@@ -235,13 +237,18 @@ rab.resize(132);
 // it act like it's been detached.
 assertThrows(() => U32c[0]);
 assert(U32c.length === 0);
+// Resizing the underlying buffer can bring a TA back into bounds.
+// New memory is zeroed.
+rab.resize(1024);
+assert(U32b[0] === 0);
+assert(U32b.length === 192);
 ```
 
 ## Implementation
 
 - Both `ResizableArrayBuffer` and `GrowableSharedArrayBuffer` are designed to be direct buffers where the virtual memory is reserved for the address range but not backed by physical memory until needed.
 
-- TypedArrays that are backed by resizable and growable buffers have more complex, but similar-in-kind, logic to detachment checks. The performance expectation is that these TypedArrays will be slower than TypedArrays backed by fixed-size buffers.
+- TypedArrays that are backed by resizable and growable buffers have more complex, but similar-in-kind, logic to detachment checks. The performance expectation is that these TypedArrays will be slower than TypedArrays backed by fixed-size buffers. In tight loops, however, this generalized check is hoistable in the same way that the current detach check is hoistable.
 
 - TypedArrays that are backed by resizable and growable buffers are recommended to have a distinct hidden class from TypedArrays backed by fixed-size buffers for maintainability of security-sensitive fast paths. This unfortunately makes use sites polymorphic. The slowdown from the polymorphism needs to be benchmarked.
 
