@@ -52,9 +52,9 @@
     </emu-alg>
   </emu-clause>
 
-  <emu-clause id="sec-arraybufferisresizableorgrowable" aoid="ArrayBufferIsResizable">
-    <h1>ArrayBufferIsResizable ( _arrayBuffer_ )</h1>
-    <p>The abstract operation ArrayBufferIsResizable takes argument _arrayBuffer_. It performs the following steps when called:</p>
+  <emu-clause id="sec-isresizablearraybuffer" aoid="IsResizableArrayBuffer">
+    <h1>IsResizableArrayBuffer ( _arrayBuffer_ )</h1>
+    <p>The abstract operation IsResizableArrayBuffer takes argument _arrayBuffer_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: Type(_arrayBuffer_) is Object and it has an [[ArrayBufferData]] internal slot.
       1. If _buffer_ has an [[ArrayBufferMaxByteLength]] internal slot, return *true*.
@@ -378,6 +378,20 @@
 <emu-clause id="sec-properties-of-the-arraybuffer-prototype-object-mods">
   <h1>Modifications to Properties of the ArrayBuffer Prototype Object</h1>
 
+  <emu-clause id="sec-get-arraybuffer.prototype.bytelength">
+    <h1>get ArrayBuffer.prototype.byteLength</h1>
+    <p>`ArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+    <emu-alg>
+      1. Let _O_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
+      1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
+      1. <ins>If IsResizableArrayBuffer(_O_) is *true*, throw a *TypeError* exception.</ins>
+      1. If IsDetachedBuffer(_O_) is *true*, return *+0*<sub>𝔽</sub>.
+      1. Let _length_ be _O_.[[ArrayBufferByteLength]].
+      1. Return 𝔽(_length_).
+    </emu-alg>
+  </emu-clause>
+
   <emu-clause id="sec-arraybuffer.prototype.slice">
     <h1>ArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
     <p>The following steps are taken:</p>
@@ -395,8 +409,8 @@
       1. Let _ctor_ be ? SpeciesConstructor(_O_, %ArrayBuffer%).
       1. Let _new_ be ? Construct(_ctor_, &laquo; _newLen_ &raquo;).
       1. Perform ? RequireInternalSlot(_new_, [[ArrayBufferData]]).
-      1. <ins>If _new_ has an [[ArrayBufferMaxByteLength]] internal slot, throw a *TypeError* exception.</ins>
       1. If IsSharedArrayBuffer(_new_) is *true*, throw a *TypeError* exception.
+      1. <ins>If IsResizableArrayBuffer(_new_) is *true*, throw a *TypeError* exception.</ins>
       1. If IsDetachedBuffer(_new_) is *true*, throw a *TypeError* exception.
       1. If SameValue(_new_, _O_) is *true*, throw a *TypeError* exception.
       1. If _new_.[[ArrayBufferByteLength]] &lt; _newLen_, throw a *TypeError* exception.
@@ -423,8 +437,8 @@
       1. Let _ctor_ be ? SpeciesConstructor(_O_, %ArrayBuffer%).
       1. Let _new_ be ? Construct(_ctor_, &laquo; _newLen_ &raquo;).
       1. Perform ? RequireInternalSlot(_new_, [[ArrayBufferData]]).
-      1. If _new_ has an [[ArrayBufferMaxByteLength]] internal slot, throw a *TypeError* exception.
       1. If IsSharedArrayBuffer(_new_) is *true*, throw a *TypeError* exception.
+      1. If IsResizableArrayBuffer(_new_) is *true*, throw a *TypeError* exception.
       1. If IsDetachedBuffer(_new_) is *true*, throw a *TypeError* exception.
       1. If SameValue(_new_, _O_) is *true*, throw a *TypeError* exception.
       1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
@@ -437,6 +451,54 @@
     </emu-alg>
   </emu-clause>
   </ins>
+</emu-clause>
+
+<emu-clause id="sec-properties-of-the-sharedarraybuffer-prototype-object-mods">
+  <h1>Modifications to Properties of the SharedArrayBuffer Prototype Object</h1>
+
+  <emu-clause id="sec-get-sharedarraybuffer.prototype.bytelength">
+    <h1>get SharedArrayBuffer.prototype.byteLength</h1>
+    <p>`SharedArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+    <emu-alg>
+      1. Let _O_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
+      1. <ins>If IsResizableArrayBuffer(_O_) is *true*, throw a *TypeError* exception.</ins>
+      1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
+      1. Let _length_ be _O_.[[ArrayBufferByteLength]].
+      1. Return 𝔽(_length_).
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-sharedarraybuffer.prototype.slice">
+    <h1>SharedArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _O_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
+      1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
+      1. Let _len_ be _O_.[[ArrayBufferByteLength]].
+      1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
+      1. If _relativeStart_ is -&infin;, let _first_ be 0.
+      1. Else if _relativeStart_ &lt; 0, let _first_ be max(_len_ + _relativeStart_, 0).
+      1. Else, let _first_ be min(_relativeStart_, _len_).
+      1. If _end_ is *undefined*, let _relativeEnd_ be _len_; else let _relativeEnd_ be ? ToIntegerOrInfinity(_end_).
+      1. If _relativeEnd_ is -&infin;, let _final_ be 0.
+      1. Else if _relativeEnd_ &lt; 0, let _final_ be max(_len_ + _relativeEnd_, 0).
+      1. Else, let _final_ be min(_relativeEnd_, _len_).
+      1. Let _newLen_ be max(_final_ - _first_, 0).
+      1. Let _ctor_ be ? SpeciesConstructor(_O_, %SharedArrayBuffer%).
+      1. Let _new_ be ? Construct(_ctor_, &laquo; 𝔽(_newLen_) &raquo;).
+      1. Perform ? RequireInternalSlot(_new_, [[ArrayBufferData]]).
+      1. If IsSharedArrayBuffer(_new_) is *false*, throw a *TypeError* exception.
+      1. <ins>If IsResizableArrayBuffer(_new_) is *true*, throw a *TypeError* exception.</ins>
+      1. If _new_.[[ArrayBufferData]] and _O_.[[ArrayBufferData]] are the same Shared Data Block values, throw a *TypeError* exception.
+      1. If _new_.[[ArrayBufferByteLength]] &lt; _newLen_, throw a *TypeError* exception.
+      1. Let _fromBuf_ be _O_.[[ArrayBufferData]].
+      1. Let _toBuf_ be _new_.[[ArrayBufferData]].
+      1. Perform CopyDataBlockBytes(_toBuf_, 0, _fromBuf_, _first_, _newLen_).
+      1. Return _new_.
+    </emu-alg>
+  </emu-clause>
 </emu-clause>
 
 <emu-clause id="sec-integer-indexed-exotic-objects-mods">
@@ -496,7 +558,7 @@
       1. Assert: _O_.[[ArrayLength]] is not ~oob~.
       1. If _O_.[[ArrayLength]] is not ~auto~, return _O_.[[ArrayLength]].
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-      1. Assert: ! RequireInternal(_buffer_, [[ArrayBufferMaxByteLength]]) is *true*.
+      1. Assert: IsResizableArrayBuffer(_buffer_) is *true*.
       1. Let _bufferByteLength_ be _buffer_.[[ArrayBufferByteLength]].
       1. Let _byteOffset_ be _O_.[[ByteOffset]].
       1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
@@ -713,7 +775,7 @@
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
         1. Let _offset_ be ? ToIndex(_byteOffset_).
         1. If _offset_ modulo _elementSize_ &ne; 0, throw a *RangeError* exception.
-        1. <ins>Let _bufferIsResizable_ be ArrayBufferIsResizable(_buffer_).</ins>
+        1. <ins>Let _bufferIsResizable_ be IsResizableArrayBuffer(_buffer_).</ins>
         1. If _length_ is not *undefined*, then
           1. Let _newLength_ be ? ToIndex(_length_).
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
@@ -834,7 +896,7 @@
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. Let _bufferByteLength_ be <del>_buffer_.[[ArrayBufferByteLength]]</del><ins>ArrayBufferByteLength(_buffer_).</ins>.
         1. If _offset_ &gt; _bufferByteLength_, throw a *RangeError* exception.
-        1. <ins>Let _bufferIsResizable_ be ArrayBufferIsResizable(_buffer_).</ins>
+        1. <ins>Let _bufferIsResizable_ be IsResizableArrayBuffer(_buffer_).</ins>
         1. <ins>If _bufferIsResizable_ is *true* and _byteLength_ is *undefined*, then</ins>
           1. <ins>Let _viewByteLength_ be ~auto~.</ins>
         1. <del>I</del><ins>Else i</ins>f _byteLength_ is *undefined*, then
