@@ -149,6 +149,7 @@
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
+        1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. Let _newByteLength_ to ? ToInteger(_newLength_).
         1. Let _oldBlock_ be _O_.[[ArrayBufferData]].
@@ -329,7 +330,7 @@
     </emu-clause>
 
     <emu-clause id="sec-growablesharedarraybuffer.prototype.resize">
-      <h1>GrowableSharedArrayBuffer.prototype.grow ( _newLength_ )</h1>
+      <h1>GrowableSharedArrayBuffer.prototype.resize ( _newLength_ )</h1>
       <p>The following steps are taken:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
