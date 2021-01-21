@@ -160,7 +160,8 @@
           1. Let _newBlock_ be ? CreateByteDataBlock(_newByteLength_).
           1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
           1. Perform CopyDataBlockBytes(_newBlock_, 0, _oldBlock_, 0, _copyLength_).
-          1. NOTE: Neither creation of the new Data Block nor copying from the old Data Block are observable. Implementations reserve the right to implement this method as in-place growth or shrinkage.
+        1. NOTE: Neither creation of the new Data Block nor copying from the old Data Block are observable. Implementations reserve the right to implement this method as in-place growth or shrinkage.
+        1. Set _O_.[[ArrayBufferByteLength]] to _newLength_.
         1. Return *undefined*.
       </emu-alg>
     </emu-clause>
@@ -224,7 +225,7 @@
     <h1>AllocateSharedArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
     <p>The abstract operation AllocateSharedArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create a SharedArrayBuffer object. It performs the following steps when called:</p>
     <emu-alg>
-      1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]], &raquo;.</ins>
+      1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]] &raquo;.</ins>
       1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
       1. <ins>Else, append [[ArrayBufferByteLength]] to _slots_.</ins>
       1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%SharedArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]] &raquo;</del><ins>_slots_</ins>).
@@ -238,7 +239,7 @@
       1. Set _obj_.[[ArrayBufferData]] to _block_.
       1. <ins>If _maxByteLength_ is present, then</ins>
         1. <ins>Let _byteLengthBlock_ be ? CreateSharedByteDataBlock(4).</ins>
-        1. <ins>Perform SetValueInBuffer(_buffer_, 0, ~Uint64~, _byteLength_, *true*, ~SeqCst~).</ins>
+        1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, _byteLength_, *true*, ~SeqCst~).</ins>
         1. <ins>Set _obj_.[[ArrayBufferByteLengthData]] to _byteLengthBlock_.</ins>
         1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
       1. <ins>Else,</ins>
@@ -338,7 +339,7 @@
         1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
         1. Let _newByteLength_ to ? ToInteger(_newLength_).
         1. If _newByteLength_ &le; ArrayBufferByteLength(_O_) or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
-        1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLength]].
+        1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
         1. Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, _newByteLength_, *true*, ~SeqCst~).
         1. TODO: Verify memory model event for the resize.
         1. Return *undefined*.
