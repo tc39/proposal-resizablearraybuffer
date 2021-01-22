@@ -156,7 +156,7 @@
         1. If _newByteLength_ is 0, then
           1. Perform ! DetachArrayBuffer(_oldBlock_).
         1. Else,
-          1. If _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
+          1. If _newByteLength_ &lt; 0 or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
           1. Let _newBlock_ be ? CreateByteDataBlock(_newByteLength_).
           1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
           1. Perform CopyDataBlockBytes(_newBlock_, 0, _oldBlock_, 0, _copyLength_).
