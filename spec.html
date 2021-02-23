@@ -20,16 +20,18 @@
   <h1>Modifications to Abstract Operations for ArrayBuffer Objects</h1>
 
   <emu-clause id="sec-allocatearraybuffer" aoid="AllocateArrayBuffer">
-    <h1>AllocateArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
-    <p>The abstract operation AllocateArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create an ArrayBuffer object. It performs the following steps when called:</p>
+    <h1>AllocateArrayBuffer ( _constructor_, _byteLength_<ins>[ , _requestedMaxByteLength_ ]</ins> )</h1>
+    <p>The abstract operation AllocateArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _requestedMaxByteLength_</ins>. It is used to create an ArrayBuffer object. It performs the following steps when called:</p>
     <emu-alg>
       1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;.</ins>
-      1. <ins>If _maxByteLength_ is present, append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+      1. <ins>If _requestedMaxByteLength_ is present, append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
       1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%ArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;</del><ins>_slots</ins>).
       1. Let _block_ be ? CreateByteDataBlock(_byteLength_).
       1. Set _obj_.[[ArrayBufferData]] to _block_.
       1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
-      1. <ins>If _maxByteLength_ is present, then</ins>
+      1. <ins>If _requestedMaxByteLength_ is present, then</ins>
+        1. <ins>Let _maxByteLength_ be an implementation-defined value that is &ge; _requestedMaxByteLength_ and a power of 2.</ins>
+        1. <ins>NOTE: Implementations may choose to round up the requested maximum byte length, for example, to be on a page boundary.</ins>
         1. <ins>If it is not possible to create a Data Block _block_ consisting of _maxByteLength_ bytes, throw a *RangeError* exception.</ins>
         1. <ins>NOTE: ResizableArrayBuffers are designed to be implementable with in-place growth. Implementations reserve the right to throw if, for example, virtual memory cannot be reserved up front.</ins>
         1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
@@ -227,11 +229,14 @@
   <h1>Modifications to Abstract Operations for SharedArrayBuffer Objects</h1>
 
   <emu-clause id="sec-allocatesharedarraybuffer" aoid="AllocateSharedArrayBuffer">
-    <h1>AllocateSharedArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
-    <p>The abstract operation AllocateSharedArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create a SharedArrayBuffer object. It performs the following steps when called:</p>
+    <h1>AllocateSharedArrayBuffer ( _constructor_, _byteLength_<ins>[ , _requestedMaxByteLength_ ]</ins> )</h1>
+    <p>The abstract operation AllocateSharedArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _requestedMaxByteLength_</ins>. It is used to create a SharedArrayBuffer object. It performs the following steps when called:</p>
     <emu-alg>
       1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]] &raquo;.</ins>
-      1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+      1. <ins>If _requestedMaxByteLength_ is present, then:</ins>
+        1. <ins>Append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+        1. <ins>Let _maxByteLength_ be an implementation-defined value that is &ge; _requestedMaxByteLength_ and a power of 2.</ins>
+        1. <ins>NOTE: Implementations may choose to round up the requested maximum byte length, for example, to be on a page boundary.</ins>
       1. <ins>Else, append [[ArrayBufferByteLength]] to _slots_.</ins>
       1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%SharedArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]] &raquo;</del><ins>_slots_</ins>).
       1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
