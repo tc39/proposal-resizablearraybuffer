@@ -293,7 +293,9 @@ Yes, with detach semantics.
 
 ### Should `resize(0)` be allowed?
 
-Currently a length of 0 always denotes a detached buffer. Are there use cases for `resize(0)`? Should it mean detach if allowed? Or should the buffer be allowed to grow again afterwards?
+~~Currently a length of 0 always denotes a detached buffer. Are there use cases for `resize(0)`? Should it mean detach if allowed? Or should the buffer be allowed to grow again afterwards?~~
+
+https://github.com/tc39/proposal-resizablearraybuffer/issues/22 points out that `ArrayBuffer(0)` is already a thing. This proposal thus allows `resize(0)`.
 
 ### Should there be a `transferResizable()` that reallocs into another `ResizableArrayBuffer`?
 
