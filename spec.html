@@ -574,7 +574,7 @@
       1. If _O_.[[ArrayLength]] is not ~auto~, return _O_.[[ArrayLength]].
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. Assert: IsResizableArrayBuffer(_buffer_) is *true*.
-      1. Let _bufferByteLength_ be _buffer_.[[ArrayBufferByteLength]].
+      1. Let _bufferByteLength_ be ArrayBufferByteLength(_buffer_).
       1. Let _byteOffset_ be _O_.[[ByteOffset]].
       1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
       1. Let _length_ be floor((_bufferByteLength_ - _byteOffset_) / _elementSize_).
@@ -584,11 +584,11 @@
 
   <emu-clause id="sec-checkintegerindexedobjectoutofbounds" aoid="CheckIntegerIndexedObjectOutOfBounds">
     <h1>CheckIntegerIndexedObjectOutOfBounds ( _O_ )</h1>
-    <p>The abstract operation CheckIntegerIndexedObjectOutOfBounds takes arguments _O_. It checks if any part of the underlying viewed buffer is out of bounds, and marks the Integer-Indexed exotic object if so. Once an Integer-Indexed object is marked out of bounds, it remains out of bounds. It performs the following steps when called:</p>
+    <p>The abstract operation CheckIntegerIndexedObjectOutOfBounds takes arguments _O_. It checks if any part of the underlying viewed buffer is out of bounds. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-      1. Let _bufferByteLength_ be _buffer_.[[ArrayBufferByteLength]].
+      1. Let _bufferByteLength_ be ArrayBufferByteLength(_buffer_).
       1. Let _byteOffsetStart_ be _O_.[[ByteOffset]].
       1. If _O_.[[ArrayLength]] is ~auto~, then
         1. Let _byteOffsetEnd_ be _bufferByteLength_.
