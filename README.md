@@ -80,7 +80,7 @@ class ResizableArrayBuffer {
   // Shrinks are also designed to be in-place, with a length change and
   // no realloc.
   //
-  // Throws a RangeError unless 0 < newByteLength <= this.maximumByteLength.
+  // Throws a RangeError unless 0 <= newByteLength <= this.maximumByteLength.
   //
   // Can throw OOM.
   resize(newByteLength);
@@ -195,15 +195,18 @@ The _TypedArray_ (_buffer_, [, _byteOffset_ [, _length_ ] ] ) constructor is mod
 The length getter on _TypedArray_.prototype is modified as follows:
 
 - If this TA is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` and is automatically tracking the length of the backing buffer, then return floor((buffer byte length - byte offset) / element size).
-- If this TA is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` and the length is out of bounds, then return 0.
+- If this TA is backed by a `ResizableArrayBuffer` and the length is out of bounds, then return 0.
 
 All methods and internal methods that access indexed properties on TypedArrays are modified as follow:
 
-- If this TA is backed by a `ResizableArrayBuffer` or `GrowableSharedArrayBuffer` and if the translated byte index on the backing buffer is out of bounds, or if the translated byte length is out of bounds, throw a TypeError.
+- If this TA is backed by a `ResizableArrayBuffer` and the translated byte index on the backing buffer is out of bounds, return undefined.
+- If this TA is backed by a `ResizableArrayBuffer` and the translated byte length is out of bounds, return 0.
 
 This change generalizes the detachment check: if a fixed-length window on a backing buffer becomes out of bounds, either in whole or in part, due to resizing, treat it like a detached buffer.
 
-This generalized bounds check is performed on every index access on TypedArrays backed by `ResizableArrayBuffer` and `GrowableSharedArrayBuffer`.
+This generalized bounds check is performed on every index access on TypedArrays backed by `ResizableArrayBuffer`.
+
+`GrowableSharedArrayBuffer`s can only grow, so TAs backed by `GrowableSharedArrayBuffer`s cannot go out of bounds.
 
 An example:
 
@@ -283,7 +286,9 @@ Shrinking shared memory is scary and seems like a bad time.
 
 ### How would `GrowableSharedArrayBuffer` growth work with the memory model?
 
-We'll probably make `byteLength` accesses synchronize-with growth events. Will ultimately converge with wasm here.
+Growing a `GrowableSharedArrayBuffer` performs a SeqCst access on the buffer length. Explicit accesses to length, such as to the `byteLength` accessor, and built-in functions, such as `slice`, perform a SeqCst access on the buffer length. Bounds checks as part of indexed access, such as via `ta[idx]` and `Atomics.load(ta, idx)`, perform an Unordered access on the buffer length.
+
+This aligns with WebAssembly as well as enable more optimization opportunities for bounds checking codegen. It also means that other threads are not guaranteed to see the grown length without synchronizing on an explicit length access, such as by reading the `byteLength` accessor.
 
 ### Is `transfer` realloc?
 
