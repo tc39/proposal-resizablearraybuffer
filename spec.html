@@ -846,9 +846,9 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-checkviewoutofbounds" aoid="CheckViewOutOfBounds">
-      <h1>CheckViewOutOfBounds ( _view_, _getBufferByteLength_ )</h1>
-      <p>The abstract operation CheckViewOutOfBounds takes arguments _view_ and _getBufferByteLength_. It performs the following steps when called:</p>
+    <emu-clause id="sec-isviewoutofbounds" aoid="IsViewOutOfBounds">
+      <h1>IsViewOutOfBounds ( _view_, _getBufferByteLength_ )</h1>
+      <p>The abstract operation IsViewOutOfBounds takes arguments _view_ and _getBufferByteLength_. It performs the following steps when called:</p>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
         1. Let _byteLength_ be GetViewByteLength(_view_, _getBufferByteLength_).
@@ -872,7 +872,7 @@
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a GrowableSharedArrayBuffer.</ins>
-        1. <ins>If CheckViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_, _getBufferByteLength_)</ins>.
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for Element Type _type_.
@@ -896,7 +896,7 @@
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a GrowableSharedArrayBuffer.</ins>
-        1. <ins>If CheckViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_, _getBufferByteLength_)</ins>.
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for Element Type _type_.
@@ -951,7 +951,7 @@
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. <ins>If CheckViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If IsViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>GetViewByteLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_size_).
       </emu-alg>
@@ -967,7 +967,7 @@
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. <ins>If CheckViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
+        1. <ins>If IsViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
         1. Return 𝔽(_offset_).
       </emu-alg>
