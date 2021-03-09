@@ -44,7 +44,7 @@
     <h1>ArrayBufferByteLength ( _arrayBuffer_ )</h1>
     <p>The abstract operation ArrayBufferByteLength takes argument _arrayBuffer_. It performs the following steps when called:</p>
     <emu-alg>
-      1. Assert: Type(_arrayBuffer_) is Object and it has an [[ArrayBufferData]] internal slot.
+      1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
       1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
         1. Let _bufferByteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
         1. Return ℝ(GetValueFromBuffer(_bufferByteLengthBlock_, 0, ~Uint64~, *true*, ~SeqCst~)).
@@ -57,7 +57,7 @@
     <h1>IsResizableArrayBuffer ( _arrayBuffer_ )</h1>
     <p>The abstract operation IsResizableArrayBuffer takes argument _arrayBuffer_. It performs the following steps when called:</p>
     <emu-alg>
-      1. Assert: Type(_arrayBuffer_) is Object and it has an [[ArrayBufferData]] internal slot.
+      1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
       1. If _buffer_ has an [[ArrayBufferMaxByteLength]] internal slot, return *true*.
       1. Return *false*.
     </emu-alg>
