@@ -78,6 +78,19 @@
       1. Return *false*.
     </emu-alg>
   </emu-clause>
+
+  <emu-clause id="sec-hostresizearraybuffer" aoid="HostResizeArrayBuffer">
+    <h1>HostResizeArrayBuffer ( _buffer_, _newByteLength_ )</h1>
+    <p>The host-defined abstract operation HostResizeArrayBuffer takes arguments _buffer_ (a ResizableArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined resizing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
+
+    <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
+    <ul>
+      <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
+      <li>The return value is either ~handled~ or ~unhandled~.</li>
+    </ul>
+
+    <p>The default implementation of HostResizeArrayBuffer is to return ~unhandled~.</p>
+  </emu-clause>
   </ins>
 </emu-clause>
 
@@ -172,12 +185,15 @@
         1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. Let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
-        1. Let _oldBlock_ be _O_.[[ArrayBufferData]].
         1. If _newByteLength_ &lt; 0 or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
+        1. Let _hostHandled_ be ? HostResizeArrayBuffer(_O_, _newByteLength_).
+        1. If _hostHandled_ is ~handled~, return *undefined*.
+        1. Let _oldBlock_ be _O_.[[ArrayBufferData]].
         1. Let _newBlock_ be ? CreateByteDataBlock(_newByteLength_).
         1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
         1. Perform CopyDataBlockBytes(_newBlock_, 0, _oldBlock_, 0, _copyLength_).
         1. NOTE: Neither creation of the new Data Block nor copying from the old Data Block are observable. Implementations reserve the right to implement this method as in-place growth or shrinkage.
+        1. Set _O_.[[ArrayBufferData]] to _newBlock_.
         1. Set _O_.[[ArrayBufferByteLength]] to _newLength_.
         1. Return *undefined*.
       </emu-alg>
@@ -269,6 +285,21 @@
       1. Return _obj_.
     </emu-alg>
   </emu-clause>
+
+  <ins class="block">
+  <emu-clause id="sec-hostgrowsharedarraybuffer" aoid="HostGrowSharedArrayBuffer">
+    <h1>HostGrowSharedArrayBuffer ( _buffer_, _newByteLength_ )</h1>
+    <p>The host-defined abstract operation HostGrowSharedArrayBuffer takes arguments _buffer_ (a GrowableSharedArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined growing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
+
+    <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
+    <ul>
+       <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
+      <li>The return value is either ~handled~ or ~unhandled~.</li>
+    </ul>
+
+    <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
+  </emu-clause>
+  </ins>
 </emu-clause>
 
 <ins class="block">
@@ -356,10 +387,12 @@
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
         1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
         1. Let _newByteLength_ to ? ToIntegerOrInfinity(_newLength_).
+        1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
+        1. Let _hostHandled_ be ? HostGrowSharedArrayBuffer(_O_, _newByteLength_).
+        1. If _hostHandled_ is ~handled~, return *undefined*.
         1. Let _currentByteLength_ be ArrayBufferByteLength(_O_, ~SeqCst~).
         1. If _newByteLength_ &ne; _currentByteLength_, then
           1. Note: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
-          1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
           1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
           1. Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, 𝔽(_newByteLength_), *true*, ~SeqCst~).
         1. Return *undefined*.
