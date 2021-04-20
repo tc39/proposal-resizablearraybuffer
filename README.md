@@ -70,7 +70,6 @@ class ArrayBuffer {
   //
   // Designed to be implementable as a copy-free move or a realloc.
   //
-  // Throws a TypeError if the `this` value is not a resizable ArrayBuffer.
   // Throws a RangeError unless 0 <= newByteLength.
   transfer(newByteLength);
 
