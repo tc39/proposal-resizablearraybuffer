@@ -2,9 +2,9 @@
 <meta charset="utf8">
 <script src="ecmarkup.js"></script>
 <link rel="stylesheet" href="ecmarkup.css">
-<title>ResizableArrayBuffer and GrowableSharedArrayBuffer</title>
+<title>Resizable ArrayBuffer and growable SharedArrayBuffer</title>
 <pre class=metadata>
-  title: ResizableArrayBuffer and GrowableSharedArrayBuffer
+  title: Resizable ArrayBuffer and growable SharedArrayBuffer
   status: proposal
   stage: 2
   location: https://github.com/tc39/proposal-resizablearraybuffer
@@ -12,170 +12,140 @@
   contributors: Shu-yu Guo
 </pre>
 <emu-intro id="intro">
-  <h1>ResizableArrayBuffer and GrowableSharedArrayBuffer</h1>
-  <p>We provide two new constructors, `ResizableArrayBuffer` and `GrowableSharedArrayBuffer`, which allow dynamically resizable array buffers. In addition, a `transfer` method is added to the existing `ArrayBuffer` prototype.</p>
+  <h1>Resizable ArrayBuffer and growable SharedArrayBuffer</h1>
+  <p>We extend the `ArrayBuffer` and `SharedArrayBuffer` constructors to take an additional maximum byte length, which would construct dynamically resizable and growable array buffers, respectively. In addition, a `transfer` method is added to the `ArrayBuffer` prototype.</p>
 </emu-intro>
 
-<emu-clause id="sec-abstract-operations-for-arraybuffer-objects-mods">
-  <h1>Modifications to Abstract Operations for ArrayBuffer Objects</h1>
+<emu-clause id="sec-arraybuffer-objects-mods">
+  <h1>Modifications to ArrayBuffer Objects</h1>
 
-  <emu-clause id="sec-allocatearraybuffer" aoid="AllocateArrayBuffer">
-    <h1>AllocateArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
-    <p>The abstract operation AllocateArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create an ArrayBuffer object. It performs the following steps when called:</p>
-    <emu-alg>
-      1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;.</ins>
-      1. <ins>If _maxByteLength_ is present, append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
-      1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%ArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;</del><ins>_slots</ins>).
-      1. Let _block_ be ? CreateByteDataBlock(_byteLength_).
-      1. Set _obj_.[[ArrayBufferData]] to _block_.
-      1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
-      1. <ins>If _maxByteLength_ is present, then</ins>
-        1. <ins>If it is not possible to create a Data Block _block_ consisting of _maxByteLength_ bytes, throw a *RangeError* exception.</ins>
-        1. <ins>NOTE: ResizableArrayBuffers are designed to be implementable with in-place growth. Implementations reserve the right to throw if, for example, virtual memory cannot be reserved up front.</ins>
-        1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
-      1. Return _obj_.
-    </emu-alg>
+  <emu-clause id="sec-abstract-operations-for-arraybuffer-objects-mods">
+    <h1>Modifications to Abstract Operations for ArrayBuffer Objects</h1>
+
+    <emu-clause id="sec-allocatearraybuffer" aoid="AllocateArrayBuffer">
+      <h1>AllocateArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
+      <p>The abstract operation AllocateArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create an ArrayBuffer object. It performs the following steps when called:</p>
+      <emu-alg>
+        1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;.</ins>
+        1. <ins>If _maxByteLength_ is present, append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+        1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%ArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;</del><ins>_slots_</ins>).
+        1. Let _block_ be ? CreateByteDataBlock(_byteLength_).
+        1. Set _obj_.[[ArrayBufferData]] to _block_.
+        1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
+        1. <ins>If _maxByteLength_ is present, then</ins>
+          1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
+          1. <ins>If it is not possible to create a Data Block _block_ consisting of _maxByteLength_ bytes, throw a *RangeError* exception.</ins>
+          1. <ins>NOTE: Resizable ArrayBuffers are designed to be implementable with in-place growth. Implementations reserve the right to throw if, for example, virtual memory cannot be reserved up front.</ins>
+          1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
+        1. Return _obj_.
+      </emu-alg>
+    </emu-clause>
+
+    <ins class="block">
+    <emu-clause id="sec-arraybufferlength" aoid="ArrayBufferByteLength">
+      <h1>ArrayBufferByteLength ( _arrayBuffer_, _order_ )</h1>
+      <p>The abstract operation ArrayBufferByteLength takes arguments _arrayBuffer_ and _order_ (either ~SeqCst~ or ~Unordered~). It performs the following steps when called:</p>
+      <emu-alg>
+        1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
+        1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
+          1. Let _bufferByteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
+          1. Return ℝ(GetValueFromBuffer(_bufferByteLengthBlock_, 0, ~Uint64~, *true*, _order_)).
+        1. Assert: IsDetachedBuffer(_arrayBuffer_) is *false*.
+        1. Return _arrayBuffer_.[[ArrayBufferByteLength]].
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-makeidempotentarraybufferbytelengthgetter" aoid="MakeIdempotentArrayBufferByteLengthGetter">
+      <h1>MakeIdempotentArrayBufferByteLengthGetter ( _order_ )</h1>
+      <p>The abstract operation MakeIdempotentArrayBufferByteLengthGetter takes argument _order_ (either ~SeqCst~ or ~Unordered~). The returned Abstract Closure helps ensure that there there is a single shared memory read event of the byte length data block in the calling operation. It performs the following steps when called:</p>
+      <emu-alg>
+        1. NOTE: The [[ArrayBuffer]] slot is used for editorial clarity only, that a getter should only be used with a single ArrayBuffer.
+        1. Let _lengthStorage_ be { [[ArrayBuffer]]: ~empty~, [[ByteLength]]: ~empty~ }.
+        1. Let _getter_ be a new Abstract Closure with parameters (_buffer_) that captures _lengthStorage_, _buffer_, and _order_ and performs the following steps when called:
+          1. If _lengthStorage_.[[ByteLength]] is not ~empty~, then
+            1. Assert: _lengthStorage_.[[ArrayBuffer]] is ~empty~.
+            1. Set _lengthStorage_.[[ArrayBuffer]] to _buffer_.
+            1. Set _lengthStorage_.[[ByteLength]] to ArrayBufferByteLength(_buffer_, _order_).
+          1. Assert: SameValue(_lengthStorage_.[[ArrayBuffer]], _buffer_) is *true*.
+          1. Return _lengthStorage_.[[ByteLength]].
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-isresizablearraybuffer" aoid="IsResizableArrayBuffer">
+      <h1>IsResizableArrayBuffer ( _arrayBuffer_ )</h1>
+      <p>The abstract operation IsResizableArrayBuffer takes argument _arrayBuffer_. It performs the following steps when called:</p>
+      <emu-alg>
+        1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
+        1. If _buffer_ has an [[ArrayBufferMaxByteLength]] internal slot, return *true*.
+        1. Return *false*.
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-hostresizearraybuffer" aoid="HostResizeArrayBuffer">
+      <h1>HostResizeArrayBuffer ( _buffer_, _newByteLength_ )</h1>
+      <p>The host-defined abstract operation HostResizeArrayBuffer takes arguments _buffer_ (an ArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined resizing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
+
+      <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
+      <ul>
+        <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
+        <li>The return value is either ~handled~ or ~unhandled~.</li>
+      </ul>
+
+      <p>The default implementation of HostResizeArrayBuffer is to return ~unhandled~.</p>
+    </emu-clause>
+    </ins>
   </emu-clause>
 
-  <ins class="block">
-  <emu-clause id="sec-arraybufferlength" aoid="ArrayBufferByteLength">
-    <h1>ArrayBufferByteLength ( _arrayBuffer_, _order_ )</h1>
-    <p>The abstract operation ArrayBufferByteLength takes arguments _arrayBuffer_ and _order_ (either ~SeqCst~ or ~Unordered~). It performs the following steps when called:</p>
-    <emu-alg>
-      1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
-      1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
-        1. Let _bufferByteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
-        1. Return ℝ(GetValueFromBuffer(_bufferByteLengthBlock_, 0, ~Uint64~, *true*, _order_)).
-      1. Assert: IsDetachedBuffer(_arrayBuffer_) is *false*.
-      1. Return _arrayBuffer_.[[ArrayBufferByteLength]].
-    </emu-alg>
-  </emu-clause>
+  <emu-clause id="sec-arraybuffer-constructor">
+    <h1>The ArrayBuffer Constructor</h1>
 
-  <emu-clause id="sec-makeidempotentarraybufferbytelengthgetter" aoid="MakeIdempotentArrayBufferByteLengthGetter">
-    <h1>MakeIdempotentArrayBufferByteLengthGetter ( _order_ )</h1>
-    <p>The abstract operation MakeIdempotentArrayBufferByteLengthGetter takes argument _order_ (either ~SeqCst~ or ~Unordered~). The returned Abstract Closure helps ensure that there there is a single shared memory read event of the byte length data block in the calling operation. It performs the following steps when called:</p>
-    <emu-alg>
-      1. NOTE: The [[ArrayBuffer]] slot is used for editorial clarity only, that a getter should only be used with a single ArrayBuffer.
-      1. Let _lengthStorage_ be { [[ArrayBuffer]]: ~empty~, [[ByteLength]]: ~empty~ }.
-      1. Let _getter_ be a new Abstract Closure with parameters (_buffer_) that captures _lengthStorage_, _buffer_, and _order_ and performs the following steps when called:
-        1. If _lengthStorage_.[[ByteLength]] is not ~empty~, then
-          1. Assert: _lengthStorage_.[[ArrayBuffer]] is ~empty~.
-          1. Set _lengthStorage_.[[ArrayBuffer]] to _buffer_.
-          1. Set _lengthStorage_.[[ByteLength]] to ArrayBufferByteLength(_buffer_, _order_).
-        1. Assert: SameValue(_lengthStorage_.[[ArrayBuffer]], _buffer_) is *true*.
-        1. Return _lengthStorage_.[[ByteLength]].
-    </emu-alg>
-  </emu-clause>
-
-  <emu-clause id="sec-isresizablearraybuffer" aoid="IsResizableArrayBuffer">
-    <h1>IsResizableArrayBuffer ( _arrayBuffer_ )</h1>
-    <p>The abstract operation IsResizableArrayBuffer takes argument _arrayBuffer_. It performs the following steps when called:</p>
-    <emu-alg>
-      1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
-      1. If _buffer_ has an [[ArrayBufferMaxByteLength]] internal slot, return *true*.
-      1. Return *false*.
-    </emu-alg>
-  </emu-clause>
-
-  <emu-clause id="sec-hostresizearraybuffer" aoid="HostResizeArrayBuffer">
-    <h1>HostResizeArrayBuffer ( _buffer_, _newByteLength_ )</h1>
-    <p>The host-defined abstract operation HostResizeArrayBuffer takes arguments _buffer_ (a ResizableArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined resizing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
-
-    <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
-    <ul>
-      <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
-      <li>The return value is either ~handled~ or ~unhandled~.</li>
-    </ul>
-
-    <p>The default implementation of HostResizeArrayBuffer is to return ~unhandled~.</p>
-  </emu-clause>
-  </ins>
-</emu-clause>
-
-<ins class="block">
-<emu-clause id="sec-resizablearraybuffer-objects">
-  <h1>ResizableArrayBuffer Objects</h1>
-
-  <emu-clause id="sec-resizablearraybuffer-constructor">
-    <h1>The ResizableArrayBuffer Constructor</h1>
-    <p>The ResizableArrayBuffer constructor:</p>
-    <ul>
-      <li>is <dfn>%ResizableArrayBuffer%</dfn>.</li>
-      <li>is the initial value of the *"ResizableArrayBuffer"* property of the global object.</li>
-      <li>creates and initializes a new ResizableArrayBuffer object when called as a constructor.</li>
-      <li>is not intended to be called as a function and will throw an exception when called in that manner.</li>
-      <li>is designed to be subclassable. It may be used as the value of an `extends` clause of a class definition. Subclass constructors that intend to inherit the specified ResizableArrayBuffer behaviour must include a `super` call to the ResizableArrayBuffer constructor to create and initialize subclass instances with the internal state necessary to support the `ResizableArrayBuffer.prototype` built-in methods.</li>
-    </ul>
-
-    <emu-clause id="sec-resizablearraybuffer-initiallength-maxlength">
-      <h1>ResizableArrayBuffer ( _initialLength_, _maxLength_ )</h1>
-      <p>When the `ResizableArrayBuffer` function is called with arguments _initialLength_ and _maxLength_, the following steps are taken:</p>
+    <emu-clause id="sec-arraybuffer-length">
+      <h1>ArrayBuffer ( _length_ [ , _requestedMaxByteLength_ ] )</h1>
+      <p>When the `ArrayBuffer` function is called with argument _length_<ins> and optional argument _requestedMaxByteLength_</ins>, the following steps are taken:</p>
       <emu-alg>
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
-        1. Let _byteLength_ be ? ToIndex(_initialLength_).
-        1. Let _maxByteLength_ be ? ToIndex(_maxLength_).
-        1. If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.
-        1. Return ? AllocateArrayBuffer(NewTarget, _byteLength_, _maxByteLength_).
+        1. Let _byteLength_ be ? ToIndex(_length_).
+        1. <ins>If _requestedMaxByteLength_ is *undefined*, then</ins>
+          1. <ins>Return ? AllocateArrayBuffer(NewTarget, _byteLength_).</ins>
+        1. <ins>Let _maxByteLength_ be ? ToIndex(_requestedMaxByteLength_).</ins>
+        1. <ins>If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.</ins>
+        1. Return ? AllocateArrayBuffer(NewTarget, _byteLength_<ins>, _maxByteLength_</ins>).
       </emu-alg>
     </emu-clause>
   </emu-clause>
 
-  <emu-clause id="sec-properties-of-the-resizablearraybuffer-constructor">
-    <h1>Properties of the ResizableArrayBuffer Constructor</h1>
-    <p>The ResizableArrayBuffer constructor:</p>
-    <ul>
-      <li>has a [[Prototype]] internal slot whose value is %Function.prototype%.</li>
-    </ul>
-  </emu-clause>
+  <emu-clause id="sec-properties-of-the-arraybuffer-prototype-object-mods">
+    <h1>Modifications to the Properties of the ArrayBuffer Prototype Object</h1>
 
-  <emu-clause id="sec-resizablearraybuffer.prototype">
-    <h1>ResizableArrayBuffer.prototype</h1>
-    <p>The initial value of `ResizableArrayBuffer.prototype` is the ResizableArrayBuffer prototype object.</p>
-    <p>This property has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
-  </emu-clause>
-
-  <emu-clause id="sec-properties-of-the-resizablearraybuffer-prototype-object">
-    <h1>Properties of the ResizableArrayBuffer Prototype Object</h1>
-    <p>The <dfn>ResizableArrayBuffer prototype object</dfn>:</p>
-    <ul>
-      <li>is <dfn>%ResizableArrayBuffer.prototype%</dfn>.</li>
-      <li>has a [[Prototype]] internal slot whose value is %Object.prototype%.</li>
-      <li>is an ordinary object.</li>
-      <li>does not have an [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]], or [[ArrayBufferMaxByteLength]] internal slot.</li>
-    </ul>
-
-    <emu-clause id="sec-get-resizablearraybuffer.prototype.bytelength">
-      <h1>get ResizableArrayBuffer.prototype.byteLength</h1>
-      <p>`ResizableArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+    <ins class="block">
+    <emu-clause id="sec-get-arraybuffer.prototype.maxbytelength">
+      <h1>get ArrayBuffer.prototype.maxByteLength</h1>
+      <p>`ArrayBuffer.prototype.maxByteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
-        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
+        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
+        1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If IsDetachedBuffer(_O_) is *true*, return *+0*<sub>𝔽</sub>.
-        1. NOTE: The ~SeqCst~ argument below is ignored for ResizableArrayBuffer.
-        1. Let _length_ be ArrayBufferByteLength(_O_, ~SeqCst~).
+        1. If IsResizableArrayBuffer(_O_) is *true*, then
+          1. Let _length_ be _O_.[[ArrayBufferMaxByteLength]].
+        1. Else,
+          1. Let _length_ be _O_.[[ArrayBufferByteLength]].
         1. Return 𝔽(_length_).
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-resizablearraybuffer.prototype.constructor">
-      <h1>ResizableArrayBuffer.prototype.constructor</h1>
-      <p>The initial value of `ResizableArrayBuffer.prototype.constructor` is %ResizableArrayBuffer%.</p>
-    </emu-clause>
-
-    <emu-clause id="sec-get-resizablearraybuffer.prototype.maxbytelength">
-      <h1>get ResizableArrayBuffer.prototype.maxByteLength</h1>
-      <p>`ResizableArrayBuffer.prototype.maxByteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+    <emu-clause id="sec-get-arraybuffer.prototype.resizable">
+      <h1>get ArrayBuffer.prototype.resizable</h1>
+      <p>`ArrayBuffer.prototype.resizable` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
-        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
-        1. If IsDetachedBuffer(_O_) is *true*, return *+0*<sub>𝔽</sub>.
-        1. Let _length_ be _O_.[[ArrayBufferMaxByteLength]].
-        1. Return 𝔽(_length_).
+        1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
+        1. Return IsResizableArrayBuffer(_O_).
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-resizablearraybuffer.prototype.resize">
-      <h1>ResizableArrayBuffer.prototype.resize ( _newLength_ )</h1>
+    <emu-clause id="sec-arraybuffer.prototype.resize">
+      <h1>ArrayBuffer.prototype.resize ( _newLength_ )</h1>
       <p>The following steps are taken:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
@@ -197,34 +167,8 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-resizablearraybuffer.prototype.slice">
-      <h1>ResizableArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
-      <p>The following steps are taken:</p>
-      <emu-alg>
-        1. Let _O_ be the *this* value.
-        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
-        1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
-        1. Let _len_ be _O_.[[ArrayBufferByteLength]].
-        1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
-        1. If _relativeStart_ is -&infin;, let _first_ be 0.
-        1. Else if _relativeStart_ &lt; 0, let _first_ be max(_len_ + _relativeStart_, 0).
-        1. Else, let _first_ be min(_relativeStart_, _len_).
-        1. If _end_ is *undefined*, let _relativeEnd_ be _len_; else let _relativeEnd_ be ? ToIntegerOrInfinity(_end_).
-        1. If _relativeEnd_ is -&infin;, let _final_ be 0.
-        1. Else if _relativeEnd_ &lt; 0, let _final_ be max(_len_ + _relativeEnd_, 0).
-        1. Else, let _final_ be min(_relativeEnd_, _len_).
-        1. Let _newLen_ be max(_final_ - _first_, 0).
-        1. Let _new_ be ? Construct(%ArrayBuffer%, &laquo; 𝔽(_newLen_) &raquo;).
-        1. NOTE: This method returns a fixed ArrayBuffer.
-        1. Let _fromBlock_ be _O_.[[ArrayBufferData]].
-        1. Let _toBlock_ be _new_.[[ArrayBufferData]].
-        1. Perform CopyDataBlockBytes(_toBlock_, 0, _fromBlock_, _first_, _newLen_).
-        1. Return _new_.
-      </emu-alg>
-    </emu-clause>
-
-    <emu-clause id="sec-resizablearraybuffer.prototype.transfer">
-      <h1>ResizableArrayBuffer.prototype.transfer ( [ _newLength_ ] )</h1>
+    <emu-clause id="sec-arraybuffer.prototype.transfer">
+      <h1>ArrayBuffer.prototype.transfer ( [ _newLength_ ] )</h1>
       <p>The following steps are taken:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
@@ -243,139 +187,105 @@
         1. Return _new_.
       </emu-alg>
     </emu-clause>
+    </ins>
+  </emu-clause>
+</emu-clause>
 
-    <emu-clause id="sec-resizablearraybuffer.prototype-@@tostringtag">
-      <h1>ResizableArrayBuffer.prototype [ @@toStringTag ]</h1>
-      <p>The initial value of the @@toStringTag property is the String value *"ResizableArrayBuffer"*.</p>
-      <p>This property has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
+<emu-clause id="sec-sharedarraybuffer-objects-mods">
+  <h1>Modifications to SharedArrayBuffer Objects</h1>
+
+  <emu-clause id="sec-abstract-operations-for-sharedarraybuffer-objects-mods">
+    <h1>Modifications to Abstract Operations for SharedArrayBuffer Objects</h1>
+
+    <emu-clause id="sec-allocatesharedarraybuffer" aoid="AllocateSharedArrayBuffer">
+      <h1>AllocateSharedArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
+      <p>The abstract operation AllocateSharedArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create a SharedArrayBuffer object. It performs the following steps when called:</p>
+      <emu-alg>
+        1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]] &raquo;.</ins>
+        1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+        1. <ins>Else, append [[ArrayBufferByteLength]] to _slots_.</ins>
+        1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%SharedArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]] &raquo;</del><ins>_slots_</ins>).
+        1. <ins>If _maxByteLength_ is present, then let _allocLength_ be _byteLength_.</ins>
+        1. <ins>Else, let _allocLength_ be _maxByteLength_</ins>
+        1. Let _block_ be ? CreateSharedByteDataBlock(<del>_byteLength_</del><ins>_allocLength_</ins>).
+        1. <ins>NOTE: Growable SharedArrayBuffers must be implemented as in-place growable. Creation of a _maxByteLength_ sized Data Block is a specification mechanism. It may be implemented as committing a _byteLength_ sized buffer while reserving _maxByteLength_ in virtual memory.</ins>
+        1. Set _obj_.[[ArrayBufferData]] to _block_.
+        1. <ins>If _maxByteLength_ is present, then</ins>
+          1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
+          1. <ins>Let _byteLengthBlock_ be ? CreateSharedByteDataBlock(4).</ins>
+          1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, 𝔽(_byteLength_), *true*, ~SeqCst~).</ins>
+          1. <ins>Set _obj_.[[ArrayBufferByteLengthData]] to _byteLengthBlock_.</ins>
+          1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
+        1. <ins>Else,</ins>
+          1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
+        1. Return _obj_.
+      </emu-alg>
     </emu-clause>
-  </emu-clause>
-</emu-clause>
-</ins>
 
-<emu-clause id="sec-abstract-operations-for-sharedarraybuffer-objects-mods">
-  <h1>Modifications to Abstract Operations for SharedArrayBuffer Objects</h1>
+    <ins class="block">
+    <emu-clause id="sec-hostgrowsharedarraybuffer" aoid="HostGrowSharedArrayBuffer">
+      <h1>HostGrowSharedArrayBuffer ( _buffer_, _newByteLength_ )</h1>
+      <p>The host-defined abstract operation HostGrowSharedArrayBuffer takes arguments _buffer_ (a growable SharedArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined growing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
 
-  <emu-clause id="sec-allocatesharedarraybuffer" aoid="AllocateSharedArrayBuffer">
-    <h1>AllocateSharedArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
-    <p>The abstract operation AllocateSharedArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create a SharedArrayBuffer object. It performs the following steps when called:</p>
-    <emu-alg>
-      1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]] &raquo;.</ins>
-      1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
-      1. <ins>Else, append [[ArrayBufferByteLength]] to _slots_.</ins>
-      1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%SharedArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]] &raquo;</del><ins>_slots_</ins>).
-      1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
-      1. <ins>If _maxByteLength_ is present, then let _allocLength_ be _byteLength_.</ins>
-      1. <ins>Else, let _allocLength_ be _maxByteLength_</ins>
-      1. Let _block_ be ? CreateSharedByteDataBlock(<del>_byteLength_</del><ins>_allocLength_</ins>).
-      1. <ins>NOTE: GrowableSharedArrayBuffers must be implemented as in-place growable. Creation of a _maxByteLength_ sized Data Block is a specification mechanism. It may be implemented as committing a _byteLength_ sized buffer while reserving _maxByteLength_ in virtual memory.</ins>
-      1. Set _obj_.[[ArrayBufferData]] to _block_.
-      1. <ins>If _maxByteLength_ is present, then</ins>
-        1. <ins>Let _byteLengthBlock_ be ? CreateSharedByteDataBlock(4).</ins>
-        1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, 𝔽(_byteLength_), *true*, ~SeqCst~).</ins>
-        1. <ins>Set _obj_.[[ArrayBufferByteLengthData]] to _byteLengthBlock_.</ins>
-        1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
-      1. <ins>Else,</ins>
-        1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
-      1. Return _obj_.
-    </emu-alg>
+      <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
+      <ul>
+         <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
+        <li>The return value is either ~handled~ or ~unhandled~.</li>
+      </ul>
+
+      <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
+    </emu-clause>
+    </ins>
   </emu-clause>
 
-  <ins class="block">
-  <emu-clause id="sec-hostgrowsharedarraybuffer" aoid="HostGrowSharedArrayBuffer">
-    <h1>HostGrowSharedArrayBuffer ( _buffer_, _newByteLength_ )</h1>
-    <p>The host-defined abstract operation HostGrowSharedArrayBuffer takes arguments _buffer_ (a GrowableSharedArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined growing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
+  <emu-clause id="sec-sharedarraybuffer-constructor">
+    <h1>The SharedArrayBuffer Constructor</h1>
 
-    <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
-    <ul>
-       <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
-      <li>The return value is either ~handled~ or ~unhandled~.</li>
-    </ul>
-
-    <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
-  </emu-clause>
-  </ins>
-</emu-clause>
-
-<ins class="block">
-<emu-clause id="sec-growablesharedarraybuffer-objects">
-  <h1>GrowableSharedArrayBuffer Objects</h1>
-
-  <emu-clause id="sec-growablesharedarraybuffer-constructor">
-    <h1>The GrowableSharedArrayBuffer Constructor</h1>
-    <p>The GrowableSharedArrayBuffer constructor:</p>
-    <ul>
-      <li>is <dfn>%GrowableSharedArrayBuffer%</dfn>.</li>
-      <li>is the initial value of the *"GrowableSharedArrayBuffer"* property of the global object.</li>
-      <li>creates and initializes a new GrowableSharedArrayBuffer object when called as a constructor.</li>
-      <li>is not intended to be called as a function and will throw an exception when called in that manner.</li>
-      <li>is designed to be subclassable. It may be used as the value of an `extends` clause of a class definition. Subclass constructors that intend to inherit the specified GrowableSharedArrayBuffer behaviour must include a `super` call to the GrowableSharedArrayBuffer constructor to create and initialize subclass instances with the internal state necessary to support the `GrowableSharedArrayBuffer.prototype` built-in methods.</li>
-    </ul>
-
-    <emu-clause id="sec-growablesharedarraybuffere-initiallength-maxlength">
-      <h1>GrowableSharedArrayBuffer ( _initialLength_, _maxLength_ )</h1>
-      <p>When the `GrowableSharedArrayBuffer` function is called with arguments _initialLength_ and _maxLength_, the following steps are taken:</p>
+    <emu-clause id="sec-sharedarraybuffer-length">
+      <h1>SharedArrayBuffer ( [ _length_ [ , _requestedMaxByteLength_ ] ] )</h1>
+      <p>When the `SharedArrayBuffer` function is called with optional arguments _length_ and _requestedMaxByteLength_, the following steps are taken:</p>
       <emu-alg>
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
-        1. Let _byteLength_ be ? ToIndex(_initialLength_).
-        1. Let _maxByteLength_ be ? ToIndex(_maxLength_).
-        1. If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.
-        1. Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_, _maxByteLength_).
+        1. Let _byteLength_ be ? ToIndex(_length_).
+        1. <ins>If _requestedMaxByteLength_ is *undefined*, then</ins>
+          1. <ins>Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_).</ins>
+        1. <ins>Let _maxByteLength_ be ? ToIndex(_requestedMaxByteLength_).</ins>
+        1. <ins>If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.</ins>
+        1. Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_<ins>, _maxByteLength_</ins>).
       </emu-alg>
     </emu-clause>
   </emu-clause>
 
-  <emu-clause id="sec-properties-of-the-growablesharedarraybuffer-constructor">
-    <h1>Properties of the GrowableSharedArrayBuffer Constructor</h1>
-    <p>The GrowableSharedArrayBuffer constructor has a [[Prototype]] internal slot whose value is %Function.prototype%.</p>
-  </emu-clause>
+  <emu-clause id="sec-properties-of-the-sharedarraybuffer-prototype-object-mods">
+    <h1>Modifications to the Properties of the SharedArrayBuffer Prototype Object</h1>
 
-  <emu-clause id="sec-growablesharedarraybuffer.prototype">
-    <h1>GrowableSharedArrayBuffer.prototype</h1>
-    <p>The initial value of `GrowableSharedArrayBuffer.prototype` is the GrowableSharedArrayBuffer prototype object.</p>
-    <p>This property has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
-  </emu-clause>
+    <ins class="block">
+    <emu-clause id="sec-get-sharedarraybuffer.prototype.growable">
+    <h1>get SharedArrayBuffer.prototype.growable</h1>
+    <p>`SharedArrayBuffer.prototype.growable` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+    <emu-alg>
+      1. Let _O_ be the *this* value.
+      1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
+      1. Return IsResizableArrayBuffer(_O_).
+    </emu-alg>
 
-  <emu-clause id="sec-properties-of-the-growablesharedarraybuffer-prototype-object">
-    <h1>Properties of the GrowableSharedArrayBuffer Prototype Object</h1>
-    <p>The <dfn>GrowableSharedArrayBuffer prototype object</dfn>:</p>
-    <ul>
-      <li>is <dfn>%GrowableSharedArrayBuffer.prototype%</dfn>.</li>
-      <li>has a [[Prototype]] internal slot whose value is %Object.prototype%.</li>
-      <li>is an ordinary object.</li>
-      <li>does not have an [[ArrayBufferData]], [[ArrayBufferByteLengthData]], or [[ArrayBufferMaxByteLength]] internal slot.</li>
-    </ul>
-
-    <emu-clause id="sec-get-growablesharedarraybuffer.prototype.bytelength">
-      <h1>get GrowableSharedArrayBuffer.prototype.byteLength</h1>
-      <p>`GrowableSharedArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+    <emu-clause id="sec-get-sharedarraybuffer.prototype.maxbytelength">
+      <h1>get SharedArrayBuffer.prototype.maxByteLength</h1>
+      <p>`SharedArrayBuffer.prototype.maxByteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
-        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
+        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
         1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-        1. Let _length_ be ArrayBufferByteLength(_O_, ~SeqCst~).
+        1. If IsResizableArrayBuffer(_O_) is *true*, then
+          1. Let _length_ be _O_.[[ArrayBufferMaxByteLength]].
+        1. Else,
+          1. Let _length_ be _O_.[[ArrayBufferByteLength]].
         1. Return 𝔽(_length_).
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-growablesharedarraybuffer.prototype.constructor">
-      <h1>GrowableSharedArrayBuffer.prototype.constructor</h1>
-      <p>The initial value of `GrowableSharedArrayBuffer.prototype.constructor` is %GrowableSharedArrayBuffer%.</p>
-    </emu-clause>
-
-    <emu-clause id="sec-get-growablesharedarraybuffer.prototype.maxbytelength">
-      <h1>get GrowableSharedArrayBuffer.prototype.maxByteLength</h1>
-      <p>`GrowableSharedArrayBuffer.prototype.maxByteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
-      <emu-alg>
-        1. Let _O_ be the *this* value.
-        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
-        1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-        1. Return 𝔽(_O_.[[ArrayBufferMaxByteLength]]).
-      </emu-alg>
-    </emu-clause>
-
-    <emu-clause id="sec-growablesharedarraybuffer.prototype.grow">
-      <h1>GrowableSharedArrayBuffer.prototype.grow ( _newLength_ )</h1>
+    <emu-clause id="sec-sharedarraybuffer.prototype.grow">
+      <h1>SharedArrayBuffer.prototype.grow ( _newLength_ )</h1>
       <p>The following steps are taken:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
@@ -393,169 +303,7 @@
         1. Return *undefined*.
       </emu-alg>
     </emu-clause>
-
-    <emu-clause id="sec-growablesharedarraybuffer.prototype.slice">
-      <h1>GrowableSharedArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
-      <p>The following steps are taken:</p>
-      <emu-alg>
-        1. Let _O_ be the *this* value.
-        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
-        1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-        1. Let _len_ be ArrayBufferByteLength(_O_, ~SeqCst~).
-        1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
-        1. If _relativeStart_ is -&infin;, let _first_ be 0.
-        1. Else if _relativeStart_ &lt; 0, let _first_ be max(_len_ + _relativeStart_, 0).
-        1. Else, let _first_ be min(_relativeStart_, _len_).
-        1. If _end_ is *undefined*, let _relativeEnd_ be _len_; else let _relativeEnd_ be ? ToIntegerOrInfinity(_end_).
-        1. If _relativeEnd_ is -&infin;, let _final_ be 0.
-        1. Else if _relativeEnd_ &lt; 0, let _final_ be max(_len_ + _relativeEnd_, 0).
-        1. Else, let _final_ be min(_relativeEnd_, _len_).
-        1. Let _newLen_ be max(_final_ - _first_, 0).
-        1. Let _new_ be ? Construct(%SharedArrayBuffer%, &laquo; 𝔽(_newLen_) &raquo;).
-        1. NOTE: This method returns a fixed SharedArrayBuffer.
-        1. Let _fromBlock_ be _O_.[[ArrayBufferData]].
-        1. Let _toBlock_ be _new_.[[ArrayBufferData]].
-        1. Perform CopyDataBlockBytes(_toBlock_, 0, _fromBlock_, _first_, _newLen_).
-        1. Return _new_.
-      </emu-alg>
-    </emu-clause>
-
-    <emu-clause id="sec-growablesharedarraybuffer.prototype.toString">
-      <h1>GrowableSharedArrayBuffer.prototype [ @@toStringTag ]</h1>
-      <p>The initial value of the @@toStringTag property is the String value *"GrowableSharedArrayBuffer"*.</p>
-      <p>This property has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
-    </emu-clause>
-  </emu-clause>
-</emu-clause>
-</ins>
-
-<emu-clause id="sec-properties-of-the-arraybuffer-prototype-object-mods">
-  <h1>Modifications to Properties of the ArrayBuffer Prototype Object</h1>
-
-  <emu-clause id="sec-get-arraybuffer.prototype.bytelength">
-    <h1>get ArrayBuffer.prototype.byteLength</h1>
-    <p>`ArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
-    <emu-alg>
-      1. Let _O_ be the *this* value.
-      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
-      1. <ins>If IsResizableArrayBuffer(_O_) is *true*, throw a *TypeError* exception.</ins>
-      1. If IsDetachedBuffer(_O_) is *true*, return *+0*<sub>𝔽</sub>.
-      1. Let _length_ be _O_.[[ArrayBufferByteLength]].
-      1. Return 𝔽(_length_).
-    </emu-alg>
-  </emu-clause>
-
-  <emu-clause id="sec-arraybuffer.prototype.slice">
-    <h1>ArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
-    <p>The following steps are taken:</p>
-    <emu-alg>
-      1. Let _O_ be the *this* value.
-      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
-      1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
-      1. Let _len_ be _O_.[[ArrayBufferByteLength]].
-      1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
-      1. If _relativeStart_ is -&infin;, let _first_ be 0.
-      1. Else if _relativeStart_ &lt; 0, let _first_ be max(_len_ + _relativeStart_, 0).
-      1. Else, let _first_ be min(_relativeStart_, _len_).
-      1. If _end_ is *undefined*, let _relativeEnd_ be _len_; else let _relativeEnd_ be ? ToIntegerOrInfinity(_end_).
-      1. If _relativeEnd_ is -&infin;, let _final_ be 0.
-      1. Else if _relativeEnd_ &lt; 0, let _final_ be max(_len_ + _relativeEnd_, 0).
-      1. Else, let _final_ be min(_relativeEnd_, _len_).
-      1. Let _newLen_ be max(_final_ - _first_, 0).
-      1. Let _ctor_ be ? SpeciesConstructor(_O_, %ArrayBuffer%).
-      1. Let _new_ be ? Construct(_ctor_, &laquo; 𝔽(_newLen_) &raquo;).
-      1. Perform ? RequireInternalSlot(_new_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_new_) is *true*, throw a *TypeError* exception.
-      1. <ins>If IsResizableArrayBuffer(_new_) is *true*, throw a *TypeError* exception.</ins>
-      1. If IsDetachedBuffer(_new_) is *true*, throw a *TypeError* exception.
-      1. If SameValue(_new_, _O_) is *true*, throw a *TypeError* exception.
-      1. If _new_.[[ArrayBufferByteLength]] &lt; _newLen_, throw a *TypeError* exception.
-      1. NOTE: Side-effects of the above steps may have detached _O_.
-      1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
-      1. Let _fromBuf_ be _O_.[[ArrayBufferData]].
-      1. Let _toBuf_ be _new_.[[ArrayBufferData]].
-      1. Perform CopyDataBlockBytes(_toBuf_, 0, _fromBuf_, _first_, _newLen_).
-      1. Return _new_.
-    </emu-alg>
-  </emu-clause>
-
-  <ins class="block">
-  <emu-clause id="sec-arraybuffer.prototype.transfer">
-    <h1>ArrayBuffer.prototype.transfer ( [ _newLength_ ] )</h1>
-    <p>The following steps are taken:</p>
-    <emu-alg>
-      1. Let _O_ be the *this* value.
-      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
-      1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
-      1. If _newLength_ is not present, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
-      1. Else, let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
-      1. Let _ctor_ be ? SpeciesConstructor(_O_, %ArrayBuffer%).
-      1. Let _new_ be ? Construct(_ctor_, &laquo; 𝔽(_newLen_) &raquo;).
-      1. Perform ? RequireInternalSlot(_new_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_new_) is *true*, throw a *TypeError* exception.
-      1. If IsResizableArrayBuffer(_new_) is *true*, throw a *TypeError* exception.
-      1. If IsDetachedBuffer(_new_) is *true*, throw a *TypeError* exception.
-      1. If SameValue(_new_, _O_) is *true*, throw a *TypeError* exception.
-      1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
-      1. Let _fromBlock_ be _O_.[[ArrayBufferData]].
-      1. Let _toBlock_ be _new_.[[ArrayBufferData]].
-      1. Perform CopyDataBlockBytes(_toBlock_, 0, _fromBlock_, 0, _copyLength_).
-      1. NOTE: Neither creation of the new Data Block nor copying from the old Data Block are observable. Implementations reserve the right to implement this method as a zero-copy move or a `realloc`.
-      1. Perform ! DetachArrayBuffer(_O_).
-      1. Return _new_.
-    </emu-alg>
-  </emu-clause>
-  </ins>
-</emu-clause>
-
-<emu-clause id="sec-properties-of-the-sharedarraybuffer-prototype-object-mods">
-  <h1>Modifications to Properties of the SharedArrayBuffer Prototype Object</h1>
-
-  <emu-clause id="sec-get-sharedarraybuffer.prototype.bytelength">
-    <h1>get SharedArrayBuffer.prototype.byteLength</h1>
-    <p>`SharedArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
-    <emu-alg>
-      1. Let _O_ be the *this* value.
-      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
-      1. <ins>If IsResizableArrayBuffer(_O_) is *true*, throw a *TypeError* exception.</ins>
-      1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-      1. Let _length_ be _O_.[[ArrayBufferByteLength]].
-      1. Return 𝔽(_length_).
-    </emu-alg>
-  </emu-clause>
-
-  <emu-clause id="sec-sharedarraybuffer.prototype.slice">
-    <h1>SharedArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
-    <p>The following steps are taken:</p>
-    <emu-alg>
-      1. Let _O_ be the *this* value.
-      1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-      1. Let _len_ be _O_.[[ArrayBufferByteLength]].
-      1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
-      1. If _relativeStart_ is -&infin;, let _first_ be 0.
-      1. Else if _relativeStart_ &lt; 0, let _first_ be max(_len_ + _relativeStart_, 0).
-      1. Else, let _first_ be min(_relativeStart_, _len_).
-      1. If _end_ is *undefined*, let _relativeEnd_ be _len_; else let _relativeEnd_ be ? ToIntegerOrInfinity(_end_).
-      1. If _relativeEnd_ is -&infin;, let _final_ be 0.
-      1. Else if _relativeEnd_ &lt; 0, let _final_ be max(_len_ + _relativeEnd_, 0).
-      1. Else, let _final_ be min(_relativeEnd_, _len_).
-      1. Let _newLen_ be max(_final_ - _first_, 0).
-      1. Let _ctor_ be ? SpeciesConstructor(_O_, %SharedArrayBuffer%).
-      1. Let _new_ be ? Construct(_ctor_, &laquo; 𝔽(_newLen_) &raquo;).
-      1. Perform ? RequireInternalSlot(_new_, [[ArrayBufferData]]).
-      1. If IsSharedArrayBuffer(_new_) is *false*, throw a *TypeError* exception.
-      1. <ins>If IsResizableArrayBuffer(_new_) is *true*, throw a *TypeError* exception.</ins>
-      1. If _new_.[[ArrayBufferData]] and _O_.[[ArrayBufferData]] are the same Shared Data Block values, throw a *TypeError* exception.
-      1. If _new_.[[ArrayBufferByteLength]] &lt; _newLen_, throw a *TypeError* exception.
-      1. Let _fromBuf_ be _O_.[[ArrayBufferData]].
-      1. Let _toBuf_ be _new_.[[ArrayBufferData]].
-      1. Perform CopyDataBlockBytes(_toBuf_, 0, _fromBuf_, _first_, _newLen_).
-      1. Return _new_.
-    </emu-alg>
+    </ins>
   </emu-clause>
 </emu-clause>
 
@@ -590,7 +338,7 @@
       1. If ! IsInteger(_index_) is *false*, return *false*.
       1. If _index_ is *-0*<sub>𝔽</sub>, return *false*.
       1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
-      1. <ins>NOTE: Bounds checking is not a synchronizing operation when _O_'s backing buffer is a GrowableSharedArrayBuffer.</ins>
+      1. <ins>NOTE: Bounds checking is not a synchronizing operation when _O_'s backing buffer is a growable SharedArrayBuffer.</ins>
       1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return *false*.</ins>
       1. If ℝ(_index_) &lt; 0 or ℝ(_index_) &ge; <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>, return *false*.
       1. Return *true*.
@@ -896,7 +644,7 @@
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
-        1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a GrowableSharedArrayBuffer.</ins>
+        1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_, _getBufferByteLength_)</ins>.
@@ -920,7 +668,7 @@
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
-        1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a GrowableSharedArrayBuffer.</ins>
+        1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_, _getBufferByteLength_)</ins>.
@@ -1022,26 +770,26 @@
 </emu-clause>
 
 <emu-clause id="sec-maxbytelength-guidelines">
-  <h1>ResizableArrayBuffer and GrowableSharedArrayBuffer Guidelines</h1>
+  <h1>Resizable ArrayBuffer and growable SharedArrayBuffer Guidelines</h1>
   <emu-note>
-    <p>The following are guidelines for ECMAScript programmers working with ResizableArrayBuffer and GrowableSharedArrayBuffer.</p>
+    <p>The following are guidelines for ECMAScript programmers working with resizable ArrayBuffer and growable SharedArrayBuffer.</p>
     <p>We recommend that programs be tested in their deployment environments where possible. The amount of available physical memory differ greatly between hardware devices. Similarly, virtual memory subsystems also differ greatly between hardware devices as well as operating systems. An application that runs without out-of-memory errors on a 64-bit desktop web browser could run out of memory on a 32-bit mobile web browser.</p>
-    <p>When choosing a value for _requestedMaxByteLength_ parameters for ResizableArrayBuffer and GrowableSharedArrayBuffer, we recommend that the smallest possible size for the application be chosen. We recommend that _requestedMaxByteLength_ does not exceed 1073741824, or 1GiB.</p>
-    <p>Please note that successfully constructing a ResizableArrayBuffer or a GrowableSharedArrayBuffer for a particular maximum size does not guarantee that future resizes and grows will succeed.</p>
+    <p>When choosing a value for _requestedMaxByteLength_ parameters for resizable ArrayBuffer and growable SharedArrayBuffer, we recommend that the smallest possible size for the application be chosen. We recommend that _requestedMaxByteLength_ does not exceed 1073741824, or 1GiB.</p>
+    <p>Please note that successfully constructing a ResizableArrayBuffer or a growable SharedArrayBuffer for a particular maximum size does not guarantee that future resizes and grows will succeed.</p>
   </emu-note>
 
   <emu-note>
-    <p>The following are guidelines for ECMAScript implementers implementing ResizableArrayBuffer.</p>
-    <p>ResizableArrayBuffer can be implemented as copying upon resize, as in-place growth via reserving virtual memory up front, or as a combination of both for different values of the constructor's _requestedMaxByteLength_ parameter.</p>
+    <p>The following are guidelines for ECMAScript implementers implementing resizable ArrayBuffer.</p>
+    <p>Resizable ArrayBuffer can be implemented as copying upon resize, as in-place growth via reserving virtual memory up front, or as a combination of both for different values of the constructor's _requestedMaxByteLength_ parameter.</p>
     <p>If a host is multi-tenanted (i.e. it runs many JavaScript applications simultaneously), such as a web browser, and its implementations choose to implement in-place growth by reserving virtual memory, we recommend that both 32-bit and 64-bit implementations throw for values of _requestedMaxByteLength_ &ge; 1GiB to 1.5GiB. This is to reduce the likelihood a single application can exhaust the virtual memory address space and to reduce interoperability risks.</p>
     <p>If a host does not have virtual memory, such as those running on embedded devices, or if a host only implements resizing by copying, it may ignore the _requestedMaxByteLength_ parameter. However, we recommend a *RangeError* be thrown if a memory block of the requested size can never be allocated. For example, if the requested size is greater than the maximium amount of usable memory on the device.</p>
   </emu-note>
 
   <emu-note>
-    <p>The following are guidelines for ECMAScript implementers implementing GrowableSharedArrayBuffer.</p>
-    <p>We recommend GrowableSharedArrayBuffer be implemented as in-place growth via reserving virtual memory up front.</p>
-    <p>Because grow operations can be concurrent with memory accesses on a GrowableSharedArrayBuffer, the constraints of the memory model require that even unordered accesses do not "tear" (bits of their values will not be mixed). In practice, this means the underlying data block of a GrowableSharedArrayBuffer cannot be grown by being copied without stopping the world. We do not recommend stopping the world as an implementation strategy because it introduces a serialization point and is slow.</p>
-    <p>If a host does not have virtual memory, such as those running on embedded devices, we recommend ignoring the _requestedMaxByteLength_ parameter, throwing on calling GorwableSharedArrayBuffer.prototype.grow, and communicating to users that GrowableSharedArrayBuffers cannot be grown.</p>
+    <p>The following are guidelines for ECMAScript implementers implementing growable SharedArrayBuffer.</p>
+    <p>We recommend growable SharedArrayBuffer be implemented as in-place growth via reserving virtual memory up front.</p>
+    <p>Because grow operations can be concurrent with memory accesses on a growable SharedArrayBuffer, the constraints of the memory model require that even unordered accesses do not "tear" (bits of their values will not be mixed). In practice, this means the underlying data block of a growable SharedArrayBuffer cannot be grown by being copied without stopping the world. We do not recommend stopping the world as an implementation strategy because it introduces a serialization point and is slow.</p>
+    <p>If a host does not have virtual memory, such as those running on embedded devices, we recommend ignoring the _requestedMaxByteLength_ parameter, throwing on calling SharedArrayBuffer.prototype.grow, and communicating to users that growable SharedArrayBuffers cannot be grown.</p>
   </emu-note>
 </emu-clause>
 
@@ -1050,7 +798,6 @@
   <ul>
     <li><p>Uses of [[ArrayLength]] on Integer-Indexed exotic objects are replaced with calls to IntegerIndexedObjectLength.</p></li>
     <li><p>Uses of [[ByteLength]] on Integer-Indexed exotic objects are replaced with calls to IntegerIndexedByteLength.</p></li>
-    <li><p>Uses of [[ArrayBufferByteLength]] on buffer objects that may be GrowableSharedArrayBuffers are replaced with calls to ArrayBufferByteLength.</p></li>
-    <li><p>Additions of %ResizableArrayBuffer% and %GrowableSharedArrayBuffer% to the intrinsics table.</p></li>
+    <li><p>Uses of [[ArrayBufferByteLength]] on buffer objects that may be growable SharedArrayBuffers are replaced with calls to ArrayBufferByteLength.</p></li>
   </ul>
 </emu-clause>
