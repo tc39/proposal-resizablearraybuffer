@@ -168,7 +168,7 @@ class SharedArrayBuffer {
   // false otherwise.
   //
   // No setter.
-  get resizable();
+  get growable();
 
   // If resizable, returns the maximum byte length passed in during construction.
   // If not resizable, returns the byte length.
