@@ -50,15 +50,17 @@ Having a resizable `ArrayBuffer` would let WebGPU explain repointing as a resize
 
 ```javascript
 class ArrayBuffer {
-  // If maximumByteLength is undefined, the ArrayBuffer can neither grow nor
-  // shrink (status quo).
+  // If the options parameter is not an object with a "maximumByteLength"
+  // property, the ArrayBuffer can neither grow nor shrink (status quo).
+  // Otherwise it is resizable.
   //
-  // If maximumByteLength is not undefined, the ArrayBuffer can grow up to the
-  // provided maximumByteLength and shrink.
+  // A resizable ArrayBuffer can grow up to the provided
+  // options.maximumByteLength and shrink.
   //
-  // Throws a RangeError if maximumByteLength is not finite.
-  // Throws a RangeError if byteLength > maximumByteLength.
-  constructor(byteLength, [ maximumByteLength ]);
+  // If options is an object with a "maximumByteLength" property,
+  // - Throws a RangeError if maximumByteLength is not finite.
+  // - Throws a RangeError if byteLength > maximumByteLength.
+  constructor(byteLength [, options ]);
 
   // Returns a *non*-resizable ArrayBuffer with the same byte content
   // at this buffer for [0, min(this.byteLength, newByteLength)],
@@ -112,7 +114,7 @@ class ArrayBuffer {
 Example:
 
 ```javascript
-let rab = new ArrayBuffer(1024, 1024 ** 2);
+let rab = new ArrayBuffer(1024, { maximumByteLength: 1024 ** 2 });
 assert(rab.byteLength === 1024);
 assert(rab.maximumByteLength === 1024 ** 2);
 assert(rab.resizable);
@@ -135,15 +137,17 @@ assert(ab.byteLength === 1024);
 
 ```javascript
 class SharedArrayBuffer {
-  // If maximumByteLength is undefined, the SharedArrayBuffer cannot grow
-  // (status quo).
+  // If the options parameter is not an object with a "maximumByteLength"
+  // property, the SharedArrayBuffer cannot grow (status quo).
+  // Otherwise it is growable.
   //
   // A growable SharedArrayBuffer can only grow up to the provided
-  // maximumByteLength.
+  // options.maximumByteLength.
   //
-  // Throws a RangeError if maximumByteLength is not finite.
-  // Throws a RangeError if byteLength > maximumByteLength.
-  constructor(byteLength, [ maximumByteLength ]);
+  // If options is an object with a "maximumByteLength" property,
+  // - Throws a RangeError if options.maximumByteLength is not finite.
+  // - Throws a RangeError if byteLength > options.maximumByteLength.
+  constructor(byteLength [, options ]);
 
   // Grows the buffer.
   //
@@ -208,7 +212,7 @@ Growable `SharedArrayBuffer`s can only grow, so TAs backed by growable `SharedAr
 An example:
 
 ```javascript
-let rab = new ArrayBuffer(1024, 1024 ** 2);
+let rab = new ArrayBuffer(1024, { maximumByteLength: 1024 ** 2 });
 // 0 offset, auto length
 let U32a = new Uint32Array(rab);
 assert(U32a.length === 256); // (1024 - 0) / 4
