@@ -294,13 +294,14 @@
 
     <ins class="block">
     <emu-clause id="sec-get-sharedarraybuffer.prototype.growable">
-    <h1>get SharedArrayBuffer.prototype.growable</h1>
-    <p>`SharedArrayBuffer.prototype.growable` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
-    <emu-alg>
-      1. Let _O_ be the *this* value.
-      1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-      1. Return IsResizableArrayBuffer(_O_).
-    </emu-alg>
+      <h1>get SharedArrayBuffer.prototype.growable</h1>
+      <p>`SharedArrayBuffer.prototype.growable` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+      <emu-alg>
+        1. Let _O_ be the *this* value.
+        1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
+        1. Return IsResizableArrayBuffer(_O_).
+      </emu-alg>
+    </emu-clause>
 
     <emu-clause id="sec-get-sharedarraybuffer.prototype.maxbytelength">
       <h1>get SharedArrayBuffer.prototype.maxByteLength</h1>
@@ -329,22 +330,29 @@
         1. Let _newByteLength_ to ? ToIntegerOrInfinity(_newLength_).
         1. Let _rawCurrentByteLengthBytesRead_ be a List of length 8 whose elements are nondeterministically chosen byte values.
         1. NOTE: In implementations, _rawCurrentByteLengthBytesRead_ is the result of a load-link, of a load-exclusive, or of an operand of a read-modify-write instruction on the underlying hardware. The nondeterminism is a semantic prescription of the memory model to describe observable behaviour of hardware with weak consistency.
+        1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
         1. Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record.
         1. Let _currentBytesLength_ be RawBytesToNumeric(~BigUint64~, _rawCurrentByteLengthBytesRead_, _isLittleEndian_).
-        1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
-        1. NOTE: The above may fail due to concurrent calls to SharedArrayBuffer.prototype.grow racing. For example, if one agent is evaluating `sab.grow(10)` and another agent is evaluating `sab.grow(20)` concurrently, either may fail due to a race while atomically updating the length.
-        1. If _newByteLength_ &ne; _currentByteLength_, then
+        1. Let _growFailed_ be *false*.
+        1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], set _growFailed_ to *true*.
+        1. Let _byteLengthDelta_ be _newByteLength_ - _currentByteLength_.
+        1. If it is impossible to create a new Shared Data Block value consisting of _byteLengthDelta_ bytes, set _growFailed_ to *true*.
+        1. NOTE: While the observable behavior of growable SharedArrayBuffers is specified by allocating a max-sized Shared Data Block at construction time no new Shared Data Block is constructed, this step is intended to capture the requirement that implementations that run out of memory must throw a *RangeError*.
+        1. NOTE: The above checks help ensure that concurrent calls to SharedArrayBuffer.prototype.grow are totally ordered. For example, consider two racing calls: `sab.grow(10)` and `sab.grow(20)`. One of the two calls is guaranteed to win the race. The call to `sab.grow(10)` will never shrink `sab` even if `sab.grow(20)` happened first.
+        1. If _growFailed_ is *false* and _newByteLength_ &ne; _currentByteLength_, then
           1. NOTE: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
-          1. Let _execution_ be the [[CandidateExecution]] field of the surrounding agent's Agent Record.
-          1. Let _eventList_ be the [[EventList]] field of the element in _execution_.[[EventsRecords]] whose [[AgentSignifier]] is AgentSignifier().
           1. Let _second_ be a new read-modify-write modification function with parameters (_oldBytes_, _newBytes_) that captures nothing and performs the following steps atomically when called:
             1. Return _newBytes_.
-          1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
           1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, 𝔽(_newByteLength_), _isLittleEndian_).
           1. Let _event_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
-          1. Append _event_ to _eventList_.
-          1. Append Chosen Value Record { [[Event]]: _event_, [[ChosenValue]]: _rawCurrentByteLengthBytesRead_ } to _execution_.[[ChosenValues]].
           1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
+        1. Else,
+          1. Let _event_ be ReadSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8 }.
+        1. Let _execution_ be the [[CandidateExecution]] field of the surrounding agent's Agent Record.
+        1. Let _eventList_ be the [[EventList]] field of the element in _execution_.[[EventsRecords]] whose [[AgentSignifier]] is AgentSignifier().
+        1. Append _event_ to _eventList_.
+        1. Append Chosen Value Record { [[Event]]: _event_, [[ChosenValue]]: _rawCurrentBytesLengthBytesRead_ } to _execution_.[[ChosenValues]].
+        1. If _growFailed_ is *true*, throw a *RangeError* exception.
         1. Return *undefined*.
       </emu-alg>
       <emu-note>
@@ -837,7 +845,7 @@
     <p>The following are guidelines for ECMAScript implementers implementing growable SharedArrayBuffer.</p>
     <p>We recommend growable SharedArrayBuffer be implemented as in-place growth via reserving virtual memory up front.</p>
     <p>Because grow operations can be concurrent with memory accesses on a growable SharedArrayBuffer, the constraints of the memory model require that even unordered accesses do not "tear" (bits of their values will not be mixed). In practice, this means the underlying data block of a growable SharedArrayBuffer cannot be grown by being copied without stopping the world. We do not recommend stopping the world as an implementation strategy because it introduces a serialization point and is slow.</p>
-    <p>Virtual memory pages should be zero-filled-on-demand so that new memory when growing are zeroed. If zero-fill-on-demand pages are not supported, then SharedArrayBuffer.prototype.grow must be implemented with a critical section that ensures new memory is zeroed before atomically updating the byte length. Any contended attempts to enter the critical section must throw.</p>
+    <p>Grown memory must appear zeroed from the moment of its creation, including to any racy concurrent accesses. This can be accomplished via zero-filled-on-demand virtual memory pages, or careful synchronization if manually zeroing memory.</p>
     <p>If a host does not have virtual memory, such as those running on embedded devices, we recommend ignoring the _requestedMaxByteLength_ parameter, throwing on calling SharedArrayBuffer.prototype.grow, and communicating to users that growable SharedArrayBuffers cannot be grown.</p>
   </emu-note>
 </emu-clause>
