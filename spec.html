@@ -271,6 +271,19 @@
   <emu-clause id="sec-properties-of-the-sharedarraybuffer-prototype-object-mods">
     <h1>Modifications to the Properties of the SharedArrayBuffer Prototype Object</h1>
 
+    <emu-clause id="sec-get-sharedarraybuffer.prototype.bytelength">
+      <h1>get SharedArrayBuffer.prototype.byteLength</h1>
+      <p>`SharedArrayBuffer.prototype.byteLength` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
+      <emu-alg>
+        1. Let _O_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
+        1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
+        1. <del>Let _length_ be _O_.[[ArrayBufferByteLength]].</del>
+        1. <ins>Let _length_ be ArrayBufferByteLength(_O_, ~SeqCst~).</ins>
+        1. Return 𝔽(_length_).
+      </emu-alg>
+    </emu-clause>
+
     <ins class="block">
     <emu-clause id="sec-get-sharedarraybuffer.prototype.growable">
     <h1>get SharedArrayBuffer.prototype.growable</h1>
