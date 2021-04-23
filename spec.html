@@ -49,7 +49,7 @@
         1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
         1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
           1. Let _bufferByteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
-          1. Return ℝ(GetValueFromBuffer(_bufferByteLengthBlock_, 0, ~Uint64~, *true*, _order_)).
+          1. Return ℝ(GetValueFromBuffer(_bufferByteLengthBlock_, 0, ~BigUint64~, *true*, _order_)).
         1. Assert: IsDetachedBuffer(_arrayBuffer_) is *false*.
         1. Return _arrayBuffer_.[[ArrayBufferByteLength]].
       </emu-alg>
@@ -98,7 +98,7 @@
       <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
       <ul>
         <li>_buffer_ is not detached.</li>
-        <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
+        <li>If the abstract operation completes normally with ~handled~, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
         <li>The return value is either ~handled~ or ~unhandled~.</li>
       </ul>
 
@@ -226,7 +226,7 @@
         1. <ins>If _maxByteLength_ is present, then</ins>
           1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
           1. <ins>Let _byteLengthBlock_ be ? CreateSharedByteDataBlock(4).</ins>
-          1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, 𝔽(_byteLength_), *true*, ~SeqCst~).</ins>
+          1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~BigUint64~, 𝔽(_byteLength_), *true*, ~SeqCst~).</ins>
           1. <ins>Set _obj_.[[ArrayBufferByteLengthData]] to _byteLengthBlock_.</ins>
           1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
         1. <ins>Else,</ins>
@@ -242,11 +242,17 @@
 
       <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
       <ul>
-         <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
+         <li>If the abstract operation does not complete normally with ~unhandled~, and _newByteLength_ &lt; the current byte length of the _buffer_ or _newByteLength_ &gt; _buffer_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.</li>
+         <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~SeqCst~, [[Payload]] is NumericToRawBytes(~BigUint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to `SharedArrayBuffer.prototype.grow` are not "lost", i.e. silently do nothing.</li>
         <li>The return value is either ~handled~ or ~unhandled~.</li>
       </ul>
 
       <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
+
+      <emu-note>
+        <p>The first requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, SharedArrayBuffer.prototype.grow itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
+        <p>This is in contrast with HostResizeArrayBuffer, which is guaranteed that the value of _newByteLength_ is &ge; 0 and &le; _buffer_.[[ArrayBufferMaxByteLength]].</p>
+      </emu-note>
     </emu-clause>
     </ins>
   </emu-clause>
@@ -318,17 +324,32 @@
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
         1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-        1. Let _newByteLength_ to ? ToIntegerOrInfinity(_newLength_).
-        1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
         1. Let _hostHandled_ be ? HostGrowSharedArrayBuffer(_O_, _newByteLength_).
         1. If _hostHandled_ is ~handled~, return *undefined*.
-        1. Let _currentByteLength_ be ArrayBufferByteLength(_O_, ~SeqCst~).
+        1. Let _newByteLength_ to ? ToIntegerOrInfinity(_newLength_).
+        1. Let _rawCurrentByteLengthBytesRead_ be a List of length 8 whose elements are nondeterministically chosen byte values.
+        1. NOTE: In implementations, _rawCurrentByteLengthBytesRead_ is the result of a load-link, of a load-exclusive, or of an operand of a read-modify-write instruction on the underlying hardware. The nondeterminism is a semantic prescription of the memory model to describe observable behaviour of hardware with weak consistency.
+        1. Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record.
+        1. Let _currentBytesLength_ be RawBytesToNumeric(~BigUint64~, _rawCurrentByteLengthBytesRead_, _isLittleEndian_).
+        1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
+        1. NOTE: The above may fail due to concurrent calls to SharedArrayBuffer.prototype.grow racing. For example, if one agent is evaluating `sab.grow(10)` and another agent is evaluating `sab.grow(20)` concurrently, either may fail due to a race while atomically updating the length.
         1. If _newByteLength_ &ne; _currentByteLength_, then
-          1. Note: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
+          1. NOTE: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
+          1. Let _execution_ be the [[CandidateExecution]] field of the surrounding agent's Agent Record.
+          1. Let _eventList_ be the [[EventList]] field of the element in _execution_.[[EventsRecords]] whose [[AgentSignifier]] is AgentSignifier().
+          1. Let _second_ be a new read-modify-write modification function with parameters (_oldBytes_, _newBytes_) that captures nothing and performs the following steps atomically when called:
+            1. Return _newBytes_.
           1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
-          1. Perform SetValueInBuffer(_byteLengthBlock_, 0, ~Uint64~, 𝔽(_newByteLength_), *true*, ~SeqCst~).
+          1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, 𝔽(_newByteLength_), _isLittleEndian_).
+          1. Let _event_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
+          1. Append _event_ to _eventList_.
+          1. Append Chosen Value Record { [[Event]]: _event_, [[ChosenValue]]: _rawCurrentByteLengthBytesRead_ } to _execution_.[[ChosenValues]].
+          1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
         1. Return *undefined*.
       </emu-alg>
+      <emu-note>
+        <p>Many of the above steps are shared with the algorithm steps of Atomics.compareExchange and should be refactored when merged into the full specification.</p>
+      </emu-note>
     </emu-clause>
     </ins>
   </emu-clause>
@@ -816,6 +837,7 @@
     <p>The following are guidelines for ECMAScript implementers implementing growable SharedArrayBuffer.</p>
     <p>We recommend growable SharedArrayBuffer be implemented as in-place growth via reserving virtual memory up front.</p>
     <p>Because grow operations can be concurrent with memory accesses on a growable SharedArrayBuffer, the constraints of the memory model require that even unordered accesses do not "tear" (bits of their values will not be mixed). In practice, this means the underlying data block of a growable SharedArrayBuffer cannot be grown by being copied without stopping the world. We do not recommend stopping the world as an implementation strategy because it introduces a serialization point and is slow.</p>
+    <p>Virtual memory pages should be zero-filled-on-demand so that new memory when growing are zeroed. If zero-fill-on-demand pages are not supported, then SharedArrayBuffer.prototype.grow must be implemented with a critical section that ensures new memory is zeroed before atomically updating the byte length. Any contended attempts to enter the critical section must throw.</p>
     <p>If a host does not have virtual memory, such as those running on embedded devices, we recommend ignoring the _requestedMaxByteLength_ parameter, throwing on calling SharedArrayBuffer.prototype.grow, and communicating to users that growable SharedArrayBuffers cannot be grown.</p>
   </emu-note>
 </emu-clause>
