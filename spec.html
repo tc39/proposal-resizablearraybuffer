@@ -337,7 +337,7 @@
         1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], set _growFailed_ to *true*.
         1. Let _byteLengthDelta_ be _newByteLength_ - _currentByteLength_.
         1. If it is impossible to create a new Shared Data Block value consisting of _byteLengthDelta_ bytes, set _growFailed_ to *true*.
-        1. NOTE: While the observable behavior of growable SharedArrayBuffers is specified by allocating a max-sized Shared Data Block at construction time no new Shared Data Block is constructed, this step is intended to capture the requirement that implementations that run out of memory must throw a *RangeError*.
+        1. NOTE: No new Shared Data Block is constructed and used here. The observable behaviour of growable SharedArrayBuffers is specified by allocating a max-sized Shared Data Block at construction time, and this step is intended to capture the requirement that implementations that run out of memory must throw a *RangeError*.
         1. NOTE: The above checks help ensure that concurrent calls to SharedArrayBuffer.prototype.grow are totally ordered. For example, consider two racing calls: `sab.grow(10)` and `sab.grow(20)`. One of the two calls is guaranteed to win the race. The call to `sab.grow(10)` will never shrink `sab` even if `sab.grow(20)` happened first.
         1. If _growFailed_ is *false* and _newByteLength_ &ne; _currentByteLength_, then
           1. NOTE: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
