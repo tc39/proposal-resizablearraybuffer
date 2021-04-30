@@ -97,6 +97,7 @@
 
       <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
       <ul>
+        <li>_buffer_ is not detached.</li>
         <li>If the abstract operation completes normally, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
         <li>The return value is either ~handled~ or ~unhandled~.</li>
       </ul>
@@ -162,8 +163,8 @@
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
         1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
-        1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. Let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
+        1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If _newByteLength_ &lt; 0 or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
         1. Let _hostHandled_ be ? HostResizeArrayBuffer(_O_, _newByteLength_).
         1. If _hostHandled_ is ~handled~, return *undefined*.
@@ -184,11 +185,12 @@
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferMaxByteLength]]).
-        1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
-        1. If _newLength_ is not present, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
+        1. If _newLength_ is *undefined*, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
         1. Else, let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
+        1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
+        1. NOTE: Reading _O_.[[ArrayBufferByteLength]] is unobservable if the buffer is detached.
         1. Let _new_ be ? Construct(%ArrayBuffer%, &laquo; 𝔽(_newByteLength_) &raquo;).
-        1. NOTE: This method returns a fixed ArrayBuffer.
+        1. NOTE: This method returns a fixed-length ArrayBuffer.
         1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
         1. Let _fromBlock_ be _O_.[[ArrayBufferData]].
         1. Let _toBlock_ be _new_.[[ArrayBufferData]].
