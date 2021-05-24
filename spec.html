@@ -86,10 +86,11 @@
       <h1>GetArrayBufferMaxByteLengthOption ( _options_ )</h1>
       <p>The abstract operation GetArrayBufferMaxByteLengthOption takes argument _options_. It performs the following steps when called:</p>
       <emu-alg>
-        1. If Type(_options_) is Object and ? HasProperty(_options_, `"maxByteLength"`) is *true*, then
-          1. Let _maxByteLength_ be ? ToIndex(? Get(_options_, `"maxByteLength"`)).
-          1. Return _maxByteLength_.
-        1. Return ~empty~.
+        1. If Type(_options_) is not Object, return ~empty~.
+        1. Let _maxByteLength_ be ? Get(_options_, `"maxByteLength"`).
+        1. If _maxByteLength_ is *undefined*, return ~empty~.
+        1. Return ? ToIndex(_maxByteLength_).
+      </emu-alg>
     </emu-clause>
 
     <emu-clause id="sec-hostresizearraybuffer" aoid="HostResizeArrayBuffer">
