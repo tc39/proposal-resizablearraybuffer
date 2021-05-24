@@ -227,7 +227,7 @@
         1. <ins>If _maxByteLength_ is present, then</ins>
           1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
           1. <ins>Let _byteLengthBlock_ be ? CreateSharedByteDataBlock(8).</ins>
-          1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~BigUint64~, ! ToBigUint64(_byteLength_), *true*, ~SeqCst~).</ins>
+          1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~BigUint64~, ℤ(_byteLength_), *true*, ~SeqCst~).</ins>
           1. <ins>Set _obj_.[[ArrayBufferByteLengthData]] to _byteLengthBlock_.</ins>
           1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
         1. <ins>Else,</ins>
@@ -345,7 +345,7 @@
           1. NOTE: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
           1. Let _second_ be a new read-modify-write modification function with parameters (_oldBytes_, _newBytes_) that captures nothing and performs the following steps atomically when called:
             1. Return _newBytes_.
-          1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, ! ToBigUint64(_newByteLength_), _isLittleEndian_).
+          1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, ℤ(_newByteLength_), _isLittleEndian_).
           1. Let _event_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
           1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
         1. Else,
