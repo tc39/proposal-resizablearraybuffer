@@ -331,35 +331,43 @@
         1. Let _newByteLength_ to ? ToIntegerOrInfinity(_newLength_).
         1. Let _hostHandled_ be ? HostGrowSharedArrayBuffer(_O_, _newByteLength_).
         1. If _hostHandled_ is ~handled~, return *undefined*.
-        1. Let _rawCurrentByteLengthBytesRead_ be a List of length 8 whose elements are nondeterministically chosen byte values.
-        1. NOTE: In implementations, _rawCurrentByteLengthBytesRead_ is the result of a load-link, of a load-exclusive, or of an operand of a read-modify-write instruction on the underlying hardware. The nondeterminism is a semantic prescription of the memory model to describe observable behaviour of hardware with weak consistency.
-        1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
-        1. Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record.
-        1. Let _currentByteLength_ be RawBytesToNumeric(~BigUint64~, _rawCurrentByteLengthBytesRead_, _isLittleEndian_).
-        1. Let _growFailed_ be *false*.
-        1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], set _growFailed_ to *true*.
-        1. Let _byteLengthDelta_ be _newByteLength_ - _currentByteLength_.
-        1. If it is impossible to create a new Shared Data Block value consisting of _byteLengthDelta_ bytes, set _growFailed_ to *true*.
-        1. NOTE: No new Shared Data Block is constructed and used here. The observable behaviour of growable SharedArrayBuffers is specified by allocating a max-sized Shared Data Block at construction time, and this step is intended to capture the requirement that implementations that run out of memory must throw a *RangeError*.
-        1. NOTE: The above checks help ensure that concurrent calls to SharedArrayBuffer.prototype.grow are totally ordered. For example, consider two racing calls: `sab.grow(10)` and `sab.grow(20)`. One of the two calls is guaranteed to win the race. The call to `sab.grow(10)` will never shrink `sab` even if `sab.grow(20)` happened first.
-        1. If _growFailed_ is *false* and _newByteLength_ &ne; _currentByteLength_, then
-          1. NOTE: Resizes to the same length explicitly do nothing to avoid gratuitous synchronization.
-          1. Let _second_ be a new read-modify-write modification function with parameters (_oldBytes_, _newBytes_) that captures nothing and performs the following steps atomically when called:
-            1. Return _newBytes_.
-          1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, ℤ(_newByteLength_), _isLittleEndian_).
-          1. Let _event_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
-          1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
-        1. Else,
-          1. Let _event_ be ReadSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8 }.
         1. Let _execution_ be the [[CandidateExecution]] field of the surrounding agent's Agent Record.
         1. Let _eventList_ be the [[EventList]] field of the element in _execution_.[[EventsRecords]] whose [[AgentSignifier]] is AgentSignifier().
-        1. Append _event_ to _eventList_.
-        1. Append Chosen Value Record { [[Event]]: _event_, [[ChosenValue]]: _rawCurrentBytesLengthBytesRead_ } to _execution_.[[ChosenValues]].
-        1. If _growFailed_ is *true*, throw a *RangeError* exception.
+        1. Let _tryAgain_ be *true*.
+        1. Repeat, while _tryAgain_ is *true*.
+          1. Let _rawCurrentByteLengthBytesReadForChecks_ be a List of length 8 whose elements are nondeterministically chosen byte values.
+          1. Let _byteLengthBlock_ be _O_.[[ArrayBufferByteLengthData]].
+          1. Let _checksEvent_ be ReadSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8 }.
+          1. Append _checksEvent_ to _eventList_.
+          1. Append Chosen Value Record { [[Event]]: _checksEvent_, [[ChosenValue]]: _rawCurrentBytesLengthBytesReadForChecks_ } to _execution_.[[ChosenValues]].
+          1. Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record.
+          1. Let _currentByteLength_ be RawBytesToNumeric(~BigUint64~, _rawCurrentByteLengthBytesReadForChecks_, _isLittleEndian_).
+          1. If _newByteLength_ &lt; _currentByteLength_ or _newByteLength_ &gt; _O_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.
+          1. Let _byteLengthDelta_ be _newByteLength_ - _currentByteLength_.
+          1. If _byteLengthDelta_ is 0, return *undefined*.
+          1. NOTE: Grows to the same length explicitly do nothing to avoid gratuitous synchronization.
+          1. If it is impossible to create a new Shared Data Block value consisting of _byteLengthDelta_ bytes, throw a *RangeError* exception.
+          1. NOTE: No new Shared Data Block is constructed and used here. The observable behaviour of growable SharedArrayBuffers is specified by allocating a max-sized Shared Data Block at construction time, and this step is intended to capture the requirement that implementations that run out of memory must throw a *RangeError*.
+          1. Let _rawCurrentByteLengthBytesReadForCompareExchange_ be a List of length 8 whose elements are nondeterministically chosen byte values.
+          1. NOTE: In implementations, _rawCurrentByteLengthBytesReadForCompareExchange_ is the result of a load-link, of a load-exclusive, or of an operand of a read-modify-write instruction on the underlying hardware. The nondeterminism is a semantic prescription of the memory model to describe observable behaviour of hardware with weak consistency.
+          1. If ByteListEqual(_rawCurrentByteLengthBytesReadForChecks_, _rawCurrentByteLengthBytesReadForCompareExchange_) is *true*, then
+            1. Set _tryAgain_ to *false*.
+            1. Let _second_ be a new read-modify-write modification function with parameters (_oldBytes_, _newBytes_) that captures nothing and performs the following steps atomically when called:
+              1. Return _newBytes_.
+            1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, ℤ(_newByteLength_), _isLittleEndian_).
+            1. Let _compareExchangeEvent_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
+            1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
+          1. Else,
+            1. NOTE: This branch captures spurious failures due to load-link, load-exclusive, or compare-exchange instructions on the underlying hardware. Spurious failures are retried.
+            1. Set _tryAgain_ to *true*.
+            1. Let _compareExchangeEvent_ be ReadSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8 }.
+          1. Append _compareExchangeEvent_ to _eventList_.
+          1. Append Chosen Value Record { [[Event]]: _compareExchangeEvent_, [[ChosenValue]]: _rawCurrentByteLengthBytesReadForCompareExchange_ } to _execution_.[[ChosenValues]].
         1. Return *undefined*.
       </emu-alg>
       <emu-note>
-        <p>Many of the above steps are shared with the algorithm steps of Atomics.compareExchange and should be refactored when merged into the full specification.</p>
+        <p>The update to the length is designed to be implemented with a strong compare-exchange or a weak compare-exchange in a loop.</p>
+        <p>Calls to SharedArrayBuffer.prototype.grow are totally ordered. For example, consider two racing calls: `sab.grow(10)` and `sab.grow(20)`. One of the two calls is guaranteed to win the race. The call to `sab.grow(10)` will never shrink `sab` even if `sab.grow(20)` happened first.</p>
       </emu-note>
     </emu-clause>
     </ins>
