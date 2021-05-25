@@ -833,15 +833,15 @@
   <emu-note>
     <p>The following are guidelines for ECMAScript programmers working with resizable ArrayBuffer and growable SharedArrayBuffer.</p>
     <p>We recommend that programs be tested in their deployment environments where possible. The amount of available physical memory differ greatly between hardware devices. Similarly, virtual memory subsystems also differ greatly between hardware devices as well as operating systems. An application that runs without out-of-memory errors on a 64-bit desktop web browser could run out of memory on a 32-bit mobile web browser.</p>
-    <p>When choosing a value for _requestedMaxByteLength_ parameters for resizable ArrayBuffer and growable SharedArrayBuffer, we recommend that the smallest possible size for the application be chosen. We recommend that _requestedMaxByteLength_ does not exceed 1073741824, or 1GiB.</p>
+    <p>When choosing a value for the `"maxByteLength"` option for resizable ArrayBuffer and growable SharedArrayBuffer, we recommend that the smallest possible size for the application be chosen. We recommend that `"maxByteLength"` does not exceed 1073741824, or 1GiB.</p>
     <p>Please note that successfully constructing a ResizableArrayBuffer or a growable SharedArrayBuffer for a particular maximum size does not guarantee that future resizes and grows will succeed.</p>
   </emu-note>
 
   <emu-note>
     <p>The following are guidelines for ECMAScript implementers implementing resizable ArrayBuffer.</p>
-    <p>Resizable ArrayBuffer can be implemented as copying upon resize, as in-place growth via reserving virtual memory up front, or as a combination of both for different values of the constructor's _requestedMaxByteLength_ parameter.</p>
-    <p>If a host is multi-tenanted (i.e. it runs many JavaScript applications simultaneously), such as a web browser, and its implementations choose to implement in-place growth by reserving virtual memory, we recommend that both 32-bit and 64-bit implementations throw for values of _requestedMaxByteLength_ &ge; 1GiB to 1.5GiB. This is to reduce the likelihood a single application can exhaust the virtual memory address space and to reduce interoperability risks.</p>
-    <p>If a host does not have virtual memory, such as those running on embedded devices, or if a host only implements resizing by copying, it may ignore the _requestedMaxByteLength_ parameter. However, we recommend a *RangeError* be thrown if a memory block of the requested size can never be allocated. For example, if the requested size is greater than the maximium amount of usable memory on the device.</p>
+    <p>Resizable ArrayBuffer can be implemented as copying upon resize, as in-place growth via reserving virtual memory up front, or as a combination of both for different values of the constructor's `"maxByteLength"` option.</p>
+    <p>If a host is multi-tenanted (i.e. it runs many JavaScript applications simultaneously), such as a web browser, and its implementations choose to implement in-place growth by reserving virtual memory, we recommend that both 32-bit and 64-bit implementations throw for values of `"maxByteLength"` &ge; 1GiB to 1.5GiB. This is to reduce the likelihood a single application can exhaust the virtual memory address space and to reduce interoperability risks.</p>
+    <p>If a host does not have virtual memory, such as those running on embedded deviceswithout an MMU, or if a host only implements resizing by copying, it may accept any Number value for the `"maxByteLength"` option. However, we recommend a *RangeError* be thrown if a memory block of the requested size can never be allocated. For example, if the requested size is greater than the maximium amount of usable memory on the device.</p>
   </emu-note>
 
   <emu-note>
@@ -849,7 +849,7 @@
     <p>We recommend growable SharedArrayBuffer be implemented as in-place growth via reserving virtual memory up front.</p>
     <p>Because grow operations can be concurrent with memory accesses on a growable SharedArrayBuffer, the constraints of the memory model require that even unordered accesses do not "tear" (bits of their values will not be mixed). In practice, this means the underlying data block of a growable SharedArrayBuffer cannot be grown by being copied without stopping the world. We do not recommend stopping the world as an implementation strategy because it introduces a serialization point and is slow.</p>
     <p>Grown memory must appear zeroed from the moment of its creation, including to any racy concurrent accesses. This can be accomplished via zero-filled-on-demand virtual memory pages, or careful synchronization if manually zeroing memory.</p>
-    <p>If a host does not have virtual memory, such as those running on embedded devices, we recommend ignoring the _requestedMaxByteLength_ parameter, throwing on calling SharedArrayBuffer.prototype.grow, and communicating to users that growable SharedArrayBuffers cannot be grown.</p>
+    <p>In practice it is difficult to implement growable SharedArrayBuffer by copying on hosts that do not have virtual memory, such as those running on embedded devices without an MMU. Memory usage behaviour of growable SharedArrayBuffers on such hosts may significantly differ from that of hosts with virtual memory. Such hosts should clearly communicate memory usage expectations to users.</p>
   </emu-note>
 </emu-clause>
 
