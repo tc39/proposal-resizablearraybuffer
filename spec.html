@@ -244,9 +244,9 @@
 
       <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
       <ul>
-         <li>The abstract operation may complete normally or abruptly.</li>
-         <li>If the abstract operation does not complete normally with ~unhandled~, and _newByteLength_ &lt; the current byte length of the _buffer_ or _newByteLength_ &gt; _buffer_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.</li>
-         <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~SeqCst~, [[Payload]] is NumericToRawBytes(~BigUint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to `SharedArrayBuffer.prototype.grow` are not "lost", i.e. silently do nothing.</li>
+        <li>The abstract operation may complete normally or abruptly.</li>
+        <li>If the abstract operation does not complete normally with ~unhandled~, and _newByteLength_ &lt; the current byte length of the _buffer_ or _newByteLength_ &gt; _buffer_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.</li>
+        <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~SeqCst~, [[Payload]] is NumericToRawBytes(~BigUint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to `SharedArrayBuffer.prototype.grow` are totally ordered. If a ReadModifyWriteSharedMemory event was added, spurious failures in the RMW operation (e.g. a compare-exchange) must be retried.</li>
         <li>The return value is either ~handled~ or ~unhandled~.</li>
       </ul>
 
@@ -358,7 +358,7 @@
             1. Let _compareExchangeEvent_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
             1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
           1. Else,
-            1. NOTE: This branch captures spurious failures due to load-link, load-exclusive, or compare-exchange instructions on the underlying hardware. Spurious failures are retried.
+            1. NOTE: This branch captures both spurious failures due to load-link, load-exclusive, or compare-exchange instructions on the underlying hardware and failures due to concurrent, racing calls to this method. These failures are retried.
             1. Set _tryAgain_ to *true*.
             1. Let _compareExchangeEvent_ be ReadSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8 }.
           1. Append _compareExchangeEvent_ to _eventList_.
