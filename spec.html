@@ -359,6 +359,7 @@
         1. Return *undefined*.
       </emu-alg>
       <emu-note>
+        <p>Spurious failures of the compare-exchange to update the length are prohibited. If the bounds checking for the new length passes and the implementation is not out of memory, a ReadModifyWriteSharedMemory event (i.e. a successful compare-exchange) is always added into the candidate execution.</p>
         <p>Many of the above steps are shared with the algorithm steps of Atomics.compareExchange and should be refactored when merged into the full specification.</p>
       </emu-note>
     </emu-clause>
