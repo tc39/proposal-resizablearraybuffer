@@ -153,6 +153,7 @@
       <p>`ArrayBuffer.prototype.resizable` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
         1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. Return IsResizableArrayBuffer(_O_).
       </emu-alg>
@@ -186,6 +187,7 @@
       <p>The following steps are taken:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
         1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If _newLength_ is *undefined*, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
@@ -301,6 +303,7 @@
       <p>`SharedArrayBuffer.prototype.growable` is an accessor property whose set accessor function is *undefined*. Its get accessor function performs the following steps:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
         1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
         1. Return IsResizableArrayBuffer(_O_).
       </emu-alg>
