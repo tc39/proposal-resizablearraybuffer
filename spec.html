@@ -190,7 +190,6 @@
         1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If _newLength_ is *undefined*, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
         1. Else, let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
-        1. NOTE: Reading _O_.[[ArrayBufferByteLength]] is unobservable if the buffer is detached.
         1. Let _new_ be ? Construct(%ArrayBuffer%, &laquo; 𝔽(_newByteLength_) &raquo;).
         1. NOTE: This method returns a fixed-length ArrayBuffer.
         1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
