@@ -221,8 +221,8 @@
         1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
         1. <ins>Else, append [[ArrayBufferByteLength]] to _slots_.</ins>
         1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%SharedArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]] &raquo;</del><ins>_slots_</ins>).
-        1. <ins>If _maxByteLength_ is present, then let _allocLength_ be _byteLength_.</ins>
-        1. <ins>Else, let _allocLength_ be _maxByteLength_</ins>
+        1. <ins>If _maxByteLength_ is present, then let _allocLength_ be _maxByteLength_.</ins>
+        1. <ins>Else, let _allocLength_ be _byteLength_</ins>
         1. Let _block_ be ? CreateSharedByteDataBlock(<del>_byteLength_</del><ins>_allocLength_</ins>).
         1. <ins>NOTE: Growable SharedArrayBuffers must be implemented as in-place growable. Creation of a _maxByteLength_ sized Data Block is a specification mechanism. It may be implemented as committing a _byteLength_ sized buffer while reserving _maxByteLength_ in virtual memory.</ins>
         1. Set _obj_.[[ArrayBufferData]] to _block_.
