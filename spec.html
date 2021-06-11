@@ -22,6 +22,23 @@
   <emu-clause id="sec-abstract-operations-for-arraybuffer-objects-mods">
     <h1>Modifications to Abstract Operations for ArrayBuffer Objects</h1>
 
+    <emu-clause id="sec-detacharraybuffer" aoid="DetachArrayBuffer">
+      <h1>DetachArrayBuffer ( _arrayBuffer_ [ , _key_ ] )</h1>
+      <p>The abstract operation DetachArrayBuffer takes argument _arrayBuffer_ and optional argument _key_. It performs the following steps when called:</p>
+      <emu-alg>
+        1. Assert: Type(_arrayBuffer_) is Object and it has [[ArrayBufferData]], [[ArrayBufferByteLength]], and [[ArrayBufferDetachKey]] internal slots.
+        1. Assert: IsSharedArrayBuffer(_arrayBuffer_) is *false*.
+        1. If _key_ is not present, set _key_ to *undefined*.
+        1. If SameValue(_arrayBuffer_.[[ArrayBufferDetachKey]], _key_) is *false*, throw a *TypeError* exception.
+        1. Set _arrayBuffer_.[[ArrayBufferData]] to *null*.
+        1. Set _arrayBuffer_.[[ArrayBufferByteLength]] to 0.
+        1. Return NormalCompletion(*null*).
+      </emu-alg>
+      <emu-note>
+        <p>Detaching an ArrayBuffer instance disassociates the Data Block used as its backing store from the instance and sets the byte length of the buffer to 0. <del>No operations defined by this specification use the DetachArrayBuffer abstract operation. However, an ECMAScript host or implementation may define such operations.</del></p>
+      </emu-note>
+    </emu-clause>
+
     <emu-clause id="sec-allocatearraybuffer" aoid="AllocateArrayBuffer">
       <h1>AllocateArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
       <p>The abstract operation AllocateArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create an ArrayBuffer object. It performs the following steps when called:</p>
