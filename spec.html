@@ -116,10 +116,9 @@
 
       <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
       <ul>
+        <li>The abstract operation must return either NormalCompletion(~handled~), NormalCompletion(~unhandled~), or an abrupt throw completion.</li>
         <li>The abstract operation does not detach _buffer_.</li>
-        <li>The abstract operation may complete normally or abruptly.</li>
         <li>If the abstract operation completes normally with ~handled~, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
-        <li>The return value is either ~handled~ or ~unhandled~.</li>
       </ul>
 
       <p>The default implementation of HostResizeArrayBuffer is to return ~unhandled~.</p>
@@ -262,10 +261,9 @@
 
       <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
       <ul>
-         <li>The abstract operation may complete normally or abruptly.</li>
+         <li>The abstract operation must return either NormalCompletion(~handled~), NormalCompletion(~unhandled~), or an abrupt throw completion.</li>
          <li>If the abstract operation does not complete normally with ~unhandled~, and _newByteLength_ &lt; the current byte length of the _buffer_ or _newByteLength_ &gt; _buffer_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.</li>
          <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~SeqCst~, [[Payload]] is NumericToRawBytes(~BigUint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to `SharedArrayBuffer.prototype.grow` are not "lost", i.e. silently do nothing.</li>
-        <li>The return value is either ~handled~ or ~unhandled~.</li>
       </ul>
 
       <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
