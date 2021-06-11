@@ -252,7 +252,7 @@
       <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
 
       <emu-note>
-        <p>The second requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, SharedArrayBuffer.prototype.grow itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
+        <p>The first requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, SharedArrayBuffer.prototype.grow itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
         <p>This is in contrast with HostResizeArrayBuffer, which is guaranteed that the value of _newByteLength_ is &ge; 0 and &le; _buffer_.[[ArrayBufferMaxByteLength]].</p>
       </emu-note>
     </emu-clause>
