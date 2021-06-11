@@ -99,9 +99,9 @@
 
       <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
       <ul>
+        <li>The abstract operation must return either NormalCompletion(~handled~), NormalCompletion(~unhandled~), or an abrupt throw completion.</li>
         <li>The abstract operation does not detach _buffer_.</li>
         <li>If the abstract operation completes normally with ~handled~, _buffer_.[[ArrayBufferByteLength]] is _newByteLength_.</li>
-        <li>The return value is either ~handled~, ~unhandled~, or an abrupt throw completion.</li>
       </ul>
 
       <p>The default implementation of HostResizeArrayBuffer is to return ~unhandled~.</p>
@@ -244,15 +244,15 @@
 
       <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
       <ul>
+         <li>The abstract operation must return either NormalCompletion(~handled~), NormalCompletion(~unhandled~), or an abrupt throw completion.</li>
          <li>If the abstract operation does not complete normally with ~unhandled~, and _newByteLength_ &lt; the current byte length of the _buffer_ or _newByteLength_ &gt; _buffer_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.</li>
          <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~SeqCst~, [[Payload]] is NumericToRawBytes(~BigUint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to `SharedArrayBuffer.prototype.grow` are not "lost", i.e. silently do nothing.</li>
-        <li>The return value is either ~handled~, ~unhandled~, or an abrupt throw completion.</li>
       </ul>
 
       <p>The default implementation of HostGrowSharedArrayBuffer is to return ~unhandled~.</p>
 
       <emu-note>
-        <p>The first requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, SharedArrayBuffer.prototype.grow itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
+        <p>The second requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, SharedArrayBuffer.prototype.grow itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
         <p>This is in contrast with HostResizeArrayBuffer, which is guaranteed that the value of _newByteLength_ is &ge; 0 and &le; _buffer_.[[ArrayBufferMaxByteLength]].</p>
       </emu-note>
     </emu-clause>
