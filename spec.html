@@ -79,7 +79,7 @@
         1. NOTE: The [[ArrayBuffer]] slot is used for editorial clarity only, that a getter should only be used with a single ArrayBuffer.
         1. Let _lengthStorage_ be { [[ArrayBuffer]]: ~empty~, [[ByteLength]]: ~empty~ }.
         1. Let _getter_ be a new Abstract Closure with parameters (_buffer_) that captures _lengthStorage_ and _order_ and performs the following steps when called:
-          1. If _lengthStorage_.[[ByteLength]] is not ~empty~, then
+          1. If _lengthStorage_.[[ByteLength]] is ~empty~, then
             1. Assert: _lengthStorage_.[[ArrayBuffer]] is ~empty~.
             1. Set _lengthStorage_.[[ArrayBuffer]] to _buffer_.
             1. Set _lengthStorage_.[[ByteLength]] to ArrayBufferByteLength(_buffer_, _order_).
