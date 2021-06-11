@@ -273,9 +273,8 @@
         1. <ins>Let _requestedMaxByteLength_ be ? GetArrayBufferMaxByteLengthOption(_options_).</ins>
         1. <ins>If _requestedMaxByteLength_ is ~empty~, then</ins>
           1. <ins>Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_).</ins>
-        1. <ins>Let _maxByteLength_ be ? ToIndex(_requestedMaxByteLength_).</ins>
-        1. <ins>If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.</ins>
-        1. Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_<ins>, _maxByteLength_</ins>).
+        1. <ins>If _byteLength_ &gt; _requestedMaxByteLength_, throw a *RangeError* exception.</ins>
+        1. Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_<ins>, _requestedMaxByteLength_</ins>).
       </emu-alg>
     </emu-clause>
   </emu-clause>
