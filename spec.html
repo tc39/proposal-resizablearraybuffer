@@ -388,15 +388,16 @@
 
   <emu-clause id="sec-integer-indexed-exotic-objects-ownpropertykeys">
     <h1>[[OwnPropertyKeys]] ( )</h1>
-    <p>When the [[OwnPropertyKeys]] internal method of an Integer-Indexed exotic object _O_ is called, the following steps are taken:</p>
+    <p>The [[OwnPropertyKeys]] internal method of an Integer-Indexed exotic object _O_ takes no arguments. It performs the following steps when called:</p>
     <emu-alg>
       1. Let _keys_ be a new empty List.
       1. Assert: _O_ is an Integer-Indexed exotic object.
-      1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-      1. <del>Let _len_ be _O_.[[ArrayLength]]</del>.
-      1. <ins>Let _len_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
-      1. For each integer _i_ starting with 0 such that _i_ &lt; _len_, in ascending order, do
-        1. Add ! ToString(_i_) as the last element of _keys_.
+      1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *false*, then
+        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _len_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
+        1. <ins>For each integer _i_ starting with 0 such that _i_ &lt; _len_, in ascending order, do</ins>
+        1. <del>For each integer _i_ starting with 0 such that _i_ &lt; _O_.[[ArrayLength]], in ascending order, do</del>
+          1. Add ! ToString(𝔽(_i_)) as the last element of _keys_.
       1. For each own property key _P_ of _O_ such that Type(_P_) is String and _P_ is not an integer index, in ascending chronological order of property creation, do
         1. Add _P_ as the last element of _keys_.
       1. For each own property key _P_ of _O_ such that Type(_P_) is Symbol, in ascending chronological order of property creation, do
