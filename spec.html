@@ -464,8 +464,8 @@
         1. Let _byteOffsetEnd_ be _bufferByteLength_.
       1. Else,
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
-        1. Let _byteOffsetEnd_ be _O_.[[ArrayLength]] &times; _elementSize_.
-      1. If _byteOffsetStart_ &ge; _bufferByteLength_ or _byteOffsetEnd_ &ge; _bufferByteLength_, then return *true*.
+        1. Let _byteOffsetEnd_ be _bytOffsetStart_ + _O_.[[ArrayLength]] &times; _elementSize_.
+      1. If _byteOffsetStart_ &ge; _bufferByteLength_ or _byteOffsetEnd_ &gt; _bufferByteLength_, then return *true*.
       1. Return *false*.
     </emu-alg>
   </emu-clause>
