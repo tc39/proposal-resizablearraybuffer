@@ -606,6 +606,7 @@
         1. Let _constructorName_ be the String value of _O_.[[TypedArrayName]].
         1. Let _elementType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
         1. <ins>Let _getSrcBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>If IsIntegerIndexedObjectOutOfBounds(_srcArray_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _elementLength_ be <del>_srcArray_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_srcArray_, _getSrcBufferByteLength_)</ins>.
         1. Let _srcName_ be the String value of _srcArray_.[[TypedArrayName]].
         1. Let _srcType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _srcName_.
@@ -622,7 +623,6 @@
         1. Else,
           1. Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).
           1. If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.
-          1. <ins>If IsIntegerIndexedObjectOutOfBounds(_srcArray_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
           1. If _srcArray_.[[ContentType]] &ne; _O_.[[ContentType]], throw a *TypeError* exception.
           1. Let _srcByteIndex_ be _srcByteOffset_.
           1. Let _targetByteIndex_ be 0.
