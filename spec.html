@@ -533,7 +533,7 @@
         1. Assert: _O_ has [[ViewedArrayBuffer]] and [[ArrayLength]] internal slots.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
-        1. Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).
+        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _length_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_length_).
       </emu-alg>
