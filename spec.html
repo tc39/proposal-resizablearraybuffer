@@ -408,7 +408,7 @@
       1. Let _keys_ be a new empty List.
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *false*, then
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>Let _len_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
         1. <ins>For each integer _i_ starting with 0 such that _i_ &lt; _len_, in ascending order, do</ins>
         1. <del>For each integer _i_ starting with 0 such that _i_ &lt; _O_.[[ArrayLength]], in ascending order, do</del>
@@ -429,7 +429,7 @@
       1. Assert: Type(_index_) is Number.
       1. If ! IsInteger(_index_) is *false*, return *false*.
       1. If _index_ is *-0*<sub>𝔽</sub>, return *false*.
-      1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
+      1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
       1. <ins>NOTE: Bounds checking is not a synchronizing operation when _O_'s backing buffer is a growable SharedArrayBuffer.</ins>
       1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return *false*.</ins>
       1. If ℝ(_index_) &lt; 0 or ℝ(_index_) &ge; <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>, return *false*.
@@ -502,7 +502,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Return _buffer_.
       </emu-alg>
@@ -517,7 +517,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>IntegerIndexedObjectByteLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_size_).
       </emu-alg>
@@ -532,7 +532,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return *+0*<sub>𝔽</sub>.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
         1. Return 𝔽(_offset_).
@@ -548,7 +548,7 @@
         1. Assert: _O_ has [[ViewedArrayBuffer]] and [[ArrayLength]] internal slots.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _length_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_length_).
       </emu-alg>
@@ -562,7 +562,7 @@
         1. Assert: _source_ is an Object that has a [[TypedArrayName]] internal slot.
         1. Let _targetBuffer_ be _target_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_targetBuffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getSrcBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _targetLength_ be <del>_target_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_target_, _getBufferByteLength_)</ins>.
         1. Let _srcBuffer_ be _source_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_srcBuffer_) is *true*, throw a *TypeError* exception.
@@ -620,7 +620,7 @@
         1. If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.
         1. Let _constructorName_ be the String value of _O_.[[TypedArrayName]].
         1. Let _elementType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
-        1. <ins>Let _getSrcBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _elementLength_ be <del>_srcArray_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_srcArray_, _getSrcBufferByteLength_)</ins>.
         1. Let _srcName_ be the String value of _srcArray_.[[TypedArrayName]].
         1. Let _srcType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _srcName_.
@@ -735,7 +735,7 @@
         1. Set _isLittleEndian_ to ! ToBoolean(_isLittleEndian_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
@@ -759,7 +759,7 @@
         1. Set _isLittleEndian_ to ! ToBoolean(_isLittleEndian_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
@@ -815,7 +815,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>GetViewByteLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_size_).
@@ -831,7 +831,7 @@
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
         1. Return 𝔽(_offset_).
@@ -848,7 +848,7 @@
     <p>The abstract operation ValidateAtomicAccess takes arguments _typedArray_ and _requestIndex_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _typedArray_ is an Object that has a [[ViewedArrayBuffer]] internal slot.
-      1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
+      1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
       1. Let _length_ be <del>_typedArray_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_typedArray_, _getBufferByteLength_)</ins>.
       1. Let _accessIndex_ be ? ToIndex(_requestIndex_).
       1. Assert: _accessIndex_ &ge; 0.
