@@ -407,12 +407,13 @@
     <emu-alg>
       1. Let _keys_ be a new empty List.
       1. Assert: _O_ is an Integer-Indexed exotic object.
-      1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *false*, then
-        1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. <ins>Let _len_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
-        1. <ins>For each integer _i_ starting with 0 such that _i_ &lt; _len_, in ascending order, do</ins>
+      1. <del>If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *false*, then</del>
         1. <del>For each integer _i_ starting with 0 such that _i_ &lt; _O_.[[ArrayLength]], in ascending order, do</del>
-          1. Add ! ToString(𝔽(_i_)) as the last element of _keys_.
+          1. <del>Add ! ToString(𝔽(_i_)) as the last element of _keys_.</del>
+      1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+      1. <ins>Let _len_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
+      1. <ins>For each integer _i_ starting with 0 such that _i_ &lt; _len_, in ascending order, do</ins>
+        1. <ins>Add ! ToString(𝔽(_i_)) as the last element of _keys_.</ins>
       1. For each own property key _P_ of _O_ such that Type(_P_) is String and _P_ is not an integer index, in ascending chronological order of property creation, do
         1. Add _P_ as the last element of _keys_.
       1. For each own property key _P_ of _O_ such that Type(_P_) is Symbol, in ascending chronological order of property creation, do
@@ -426,12 +427,11 @@
     <p>The abstract operation IsValidIntegerIndex takes arguments _O_, _getBufferByteLength_, and _index_. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
-      1. Assert: Type(_index_) is Number.
-      1. If ! IsInteger(_index_) is *false*, return *false*.
+      1. <del>If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *false*.</del>
+      1. If ! IsIntegralNumber(_index_) is *false*, return *false*.
       1. If _index_ is *-0*<sub>𝔽</sub>, return *false*.
       1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
       1. <ins>NOTE: Bounds checking is not a synchronizing operation when _O_'s backing buffer is a growable SharedArrayBuffer.</ins>
-      1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return *false*.</ins>
       1. If ℝ(_index_) &lt; 0 or ℝ(_index_) &ge; <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>, return *false*.
       1. Return *true*.
     </emu-alg>
@@ -474,6 +474,7 @@
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
+      1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *true*.
       1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
       1. Let _byteOffsetStart_ be _O_.[[ByteOffset]].
       1. If _O_.[[ArrayLength]] is ~auto~, then
@@ -501,7 +502,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Return _buffer_.
@@ -531,7 +532,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return *+0*<sub>𝔽</sub>.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
@@ -547,7 +548,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
         1. Assert: _O_ has [[ViewedArrayBuffer]] and [[ArrayLength]] internal slots.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _length_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_length_).
@@ -565,7 +566,7 @@
         1. <ins>Let _getSrcBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _targetLength_ be <del>_target_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_target_, _getBufferByteLength_)</ins>.
         1. Let _srcBuffer_ be _source_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_srcBuffer_) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_srcBuffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>If IsIntegerIndexedObjectOutOfBounds(_target_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _targetName_ be the String value of _target_.[[TypedArrayName]].
         1. Let _targetType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _targetName_.
@@ -636,7 +637,7 @@
           1. Let _data_ be ? CloneArrayBuffer(_srcData_, _srcByteOffset_, _byteLength_, _bufferConstructor_).
         1. Else,
           1. Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).
-          1. If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.
+          1. <del>If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.</del>
           1. <ins>If IsIntegerIndexedObjectOutOfBounds(_srcArray_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
           1. If _srcArray_.[[ContentType]] &ne; _O_.[[ContentType]], throw a *TypeError* exception.
           1. Let _srcByteIndex_ be _srcByteOffset_.
@@ -718,6 +719,7 @@
         1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
         1. Let _byteLength_ be GetViewByteLength(_view_, _getBufferByteLength_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
+        1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *true*.
         1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
         1. If _view_.[[ByteOffset]] + _byteLength_ &gt; _bufferByteLength_, then return *true*.
         1. Return *false*.
@@ -734,7 +736,7 @@
         1. Let _getIndex_ be ? ToIndex(_requestIndex_).
         1. Set _isLittleEndian_ to ! ToBoolean(_isLittleEndian_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
@@ -758,7 +760,7 @@
         1. Otherwise, let _numberValue_ be ? ToNumber(_value_).
         1. Set _isLittleEndian_ to ! ToBoolean(_isLittleEndian_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
@@ -814,7 +816,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[DataView]]).
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>GetViewByteLength(_O_, _getBufferByteLength_)</ins>.
@@ -830,7 +832,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[DataView]]).
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsViewOutOfBounds(_O_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _offset_ be _O_.[[ByteOffset]].
