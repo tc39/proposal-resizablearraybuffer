@@ -433,6 +433,8 @@
       1. <ins>Let _getBufferByteLength_ be ! MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
       1. <ins>NOTE: Bounds checking is not a synchronizing operation when _O_'s backing buffer is a growable SharedArrayBuffer.</ins>
       1. If ℝ(_index_) &lt; 0 or ℝ(_index_) &ge; <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>, return *false*.
+      1. <ins>Assert: IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *false*.</ins>
+      1. <ins>NOTE: When the buffer is detached, IntegerIndexedObjectLength returns 0.</ins>
       1. Return *true*.
     </emu-alg>
   </emu-clause>
