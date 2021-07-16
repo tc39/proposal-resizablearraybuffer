@@ -135,7 +135,6 @@
       <emu-alg>
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
         1. Let _byteLength_ be ? ToIndex(_length_).
-        1. <ins>If _options_ is not present, set _options_ to *undefined*.</ins>
         1. <ins>Let _requestedMaxByteLength_ be ? GetArrayBufferMaxByteLengthOption(_options_).</ins>
         1. <ins>If _requestedMaxByteLength_ is ~empty~, then</ins>
           1. <ins>Return ? AllocateArrayBuffer(NewTarget, _byteLength_).</ins>
@@ -219,7 +218,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
         1. If IsSharedArrayBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
-        1. If _newLength_ is not present or if _newLength_ is *undefined*, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
+        1. If _newLength_ is *undefined*, let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
         1. Else, let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
         1. Let _new_ be ? Construct(%ArrayBuffer%, &laquo; 𝔽(_newByteLength_) &raquo;).
         1. NOTE: This method returns a fixed-length ArrayBuffer.
@@ -301,7 +300,6 @@
       <emu-alg>
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
         1. Let _byteLength_ be ? ToIndex(_length_).
-        1. <ins>If _options_ is not present, set _options_ to *undefined*.</ins>
         1. <ins>Let _requestedMaxByteLength_ be ? GetArrayBufferMaxByteLengthOption(_options_).</ins>
         1. <ins>If _requestedMaxByteLength_ is ~empty~, then</ins>
           1. <ins>Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_).</ins>
