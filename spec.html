@@ -760,6 +760,7 @@
           1. Let _bufferConstructor_ be %ArrayBuffer%.
         1. If _elementType_ is the same as _srcType_, then
           1. Let _data_ be ? CloneArrayBuffer(_srcData_, _srcByteOffset_, _byteLength_, _bufferConstructor_).
+          1. <ins>If IsIntegerIndexedObjectOutOfBounds(_srcArray_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Else,
           1. Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).
           1. <del>If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.</del>
