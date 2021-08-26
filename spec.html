@@ -472,7 +472,7 @@
 
   <emu-clause id="sec-isintegerindexedobjectoutofbounds" aoid="IsIntegerIndexedObjectOutOfBounds">
     <h1>IsIntegerIndexedObjectOutOfBounds ( _O_, _getBufferByteLength_ )</h1>
-    <p>The abstract operation IsIntegerIndexedObjectOutOfBounds takes arguments _O_ and _getBufferByteLength_. It checks if any part of the underlying viewed buffer is out of bounds. It performs the following steps when called:</p>
+    <p>The abstract operation IsIntegerIndexedObjectOutOfBounds takes arguments _O_ and _getBufferByteLength_. It checks if any of the object's numeric properties reference a value at an index not contained within the underlying data block's bounds. It performs the following steps when called:</p>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
