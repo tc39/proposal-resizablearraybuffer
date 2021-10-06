@@ -1,0 +1,17 @@
+{
+	"private": true,
+	"scripts": {
+		"start": "npm run build-loose -- --watch",
+		"build": "npm run build-loose -- --strict",
+		"build-loose": "ecmarkup --verbose spec.html docs/index.html --js-out docs/ecmarkup.js --css-out docs/ecmarkup.css"
+	},
+	"homepage": "https://github.com/tc39/proposal-resizablearraybuffer#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/tc39/proposal-resizablearraybuffer.git"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"ecmarkup": "^9.4.0"
+	}
+}
