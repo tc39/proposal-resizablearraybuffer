@@ -22,9 +22,15 @@
   <emu-clause id="sec-abstract-operations-for-arraybuffer-objects-mods">
     <h1>Modifications to Abstract Operations for ArrayBuffer Objects</h1>
 
-    <emu-clause id="sec-detacharraybuffer" aoid="DetachArrayBuffer">
-      <h1>DetachArrayBuffer ( _arrayBuffer_ [ , _key_ ] )</h1>
-      <p>The abstract operation DetachArrayBuffer takes argument _arrayBuffer_ and optional argument _key_. It performs the following steps when called:</p>
+    <emu-clause id="sec-detacharraybuffer" type="abstract operation">
+      <h1>
+        DetachArrayBuffer (
+          _arrayBuffer_: an ArrayBuffer,
+          optional _key_: unknown,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: Type(_arrayBuffer_) is Object and it has [[ArrayBufferData]], [[ArrayBufferByteLength]], and [[ArrayBufferDetachKey]] internal slots.
         1. Assert: IsSharedArrayBuffer(_arrayBuffer_) is *false*.
@@ -39,9 +45,18 @@
       </emu-note>
     </emu-clause>
 
-    <emu-clause id="sec-allocatearraybuffer" aoid="AllocateArrayBuffer">
-      <h1>AllocateArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
-      <p>The abstract operation AllocateArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and _maxByteLength_</ins>. It is used to create an ArrayBuffer object. It performs the following steps when called:</p>
+    <emu-clause id="sec-allocatearraybuffer" type="abstract operation">
+      <h1>
+        AllocateArrayBuffer (
+          _constructor_: unknown,
+          _byteLength_: a non-negative integer,
+          <ins>optional _maxByteLength_: a non-negative integer,</ins>
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It is used to create an ArrayBuffer.</dd>
+      </dl>
       <emu-alg>
         1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;.</ins>
         1. <ins>If _maxByteLength_ is present, append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
@@ -59,9 +74,15 @@
     </emu-clause>
 
     <ins class="block">
-    <emu-clause id="sec-arraybufferlength" aoid="ArrayBufferByteLength">
-      <h1>ArrayBufferByteLength ( _arrayBuffer_, _order_ )</h1>
-      <p>The abstract operation ArrayBufferByteLength takes arguments _arrayBuffer_ and _order_ (either ~SeqCst~ or ~Unordered~). It performs the following steps when called:</p>
+    <emu-clause id="sec-arraybufferlength" type="abstract operation">
+      <h1>
+        ArrayBufferByteLength (
+          _arrayBuffer_: an ArrayBuffer,
+          _order_: ~SeqCst~ or ~Unordered~,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
         1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
@@ -72,9 +93,16 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-makeidempotentarraybufferbytelengthgetter" aoid="MakeIdempotentArrayBufferByteLengthGetter">
-      <h1>MakeIdempotentArrayBufferByteLengthGetter ( _order_ )</h1>
-      <p>The abstract operation MakeIdempotentArrayBufferByteLengthGetter takes argument _order_ (either ~SeqCst~ or ~Unordered~). The returned Abstract Closure helps ensure that there there is a single shared memory read event of the byte length data block in the calling operation. It performs the following steps when called:</p>
+    <emu-clause id="sec-makeidempotentarraybufferbytelengthgetter" type="abstract operation">
+      <h1>
+        MakeIdempotentArrayBufferByteLengthGetter (
+          _order_: ~SeqCst~ or ~Unordered~,
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>The returned Abstract Closure helps ensure that there there is a single shared memory read event of the byte length data block in the calling operation.</dd>
+      </dl>
       <emu-alg>
         1. NOTE: The [[ArrayBuffer]] slot is used for editorial clarity only, that a getter should only be used with a single ArrayBuffer.
         1. Let _lengthStorage_ be { [[ArrayBuffer]]: ~empty~, [[ByteLength]]: ~empty~ }.
@@ -89,9 +117,14 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-isresizablearraybuffer" aoid="IsResizableArrayBuffer">
-      <h1>IsResizableArrayBuffer ( _arrayBuffer_ )</h1>
-      <p>The abstract operation IsResizableArrayBuffer takes argument _arrayBuffer_. It performs the following steps when called:</p>
+    <emu-clause id="sec-isresizablearraybuffer" type="abstract operation">
+      <h1>
+        IsResizableArrayBuffer (
+          _arrayBuffer_: an ArrayBuffer,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
         1. If _buffer_ has an [[ArrayBufferMaxByteLength]] internal slot, return *true*.
@@ -99,7 +132,7 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-getarraybuffermaxbytelengthoption" aoid="GetArrayBufferMaxByteLengthOption">
+    <emu-clause id="sec-getarraybuffermaxbytelengthoption" type="abstract operation">
       <h1>GetArrayBufferMaxByteLengthOption ( _options_ )</h1>
       <p>The abstract operation GetArrayBufferMaxByteLengthOption takes argument _options_. It performs the following steps when called:</p>
       <emu-alg>
@@ -110,9 +143,17 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-hostresizearraybuffer" aoid="HostResizeArrayBuffer">
-      <h1>HostResizeArrayBuffer ( _buffer_, _newByteLength_ )</h1>
-      <p>The host-defined abstract operation HostResizeArrayBuffer takes arguments _buffer_ (an ArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined resizing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
+    <emu-clause id="sec-hostresizearraybuffer" type="host-defined abstract operation">
+      <h1>
+        HostResizeArrayBuffer (
+          _buffer_: an ArrayBuffer,
+          _newByteLength_: a non-negative integer,
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>The host-defined abstract operation HostResizeArrayBuffer takes arguments _buffer_ (an ArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined resizing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</dd>
+      </dl>
 
       <p>The implementation of HostResizeArrayBuffer must conform to the following requirements:</p>
       <ul>
@@ -244,9 +285,18 @@
   <emu-clause id="sec-abstract-operations-for-sharedarraybuffer-objects-mods">
     <h1>Modifications to Abstract Operations for SharedArrayBuffer Objects</h1>
 
-    <emu-clause id="sec-allocatesharedarraybuffer" aoid="AllocateSharedArrayBuffer">
-      <h1>AllocateSharedArrayBuffer ( _constructor_, _byteLength_<ins>[ , _maxByteLength_ ]</ins> )</h1>
-      <p>The abstract operation AllocateSharedArrayBuffer takes arguments _constructor_<del> and</del><ins>,</ins> _byteLength_<ins>, and optional argument _maxByteLength_</ins>. It is used to create a SharedArrayBuffer object. It performs the following steps when called:</p>
+    <emu-clause id="sec-allocatesharedarraybuffer" type="abstract operation">
+      <h1>
+        AllocateSharedArrayBuffer (
+          _constructor_: unknown,
+          _byteLength_: a non-negative integer,
+          <ins>optional _maxByteLength_: a non-negative integer,</ins>
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It is used to create a SharedArrayBuffer.</dd>
+      </dl>
       <emu-alg>
         1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]] &raquo;.</ins>
         1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
@@ -270,10 +320,12 @@
     </emu-clause>
 
     <ins class="block">
-    <emu-clause id="sec-hostgrowsharedarraybuffer" aoid="HostGrowSharedArrayBuffer">
+    <emu-clause id="sec-hostgrowsharedarraybuffer" type="host-defined abstract operation">
       <h1>HostGrowSharedArrayBuffer ( _buffer_, _newByteLength_ )</h1>
-      <p>The host-defined abstract operation HostGrowSharedArrayBuffer takes arguments _buffer_ (a growable SharedArrayBuffer object) and _newByteLength_. It gives the host an opportunity to perform implementation-defined growing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</p>
-
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It gives the host an opportunity to perform implementation-defined growing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behavior.</dd>
+      </dl>
       <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
       <ul>
          <li>The abstract operation must return either NormalCompletion(~handled~), NormalCompletion(~unhandled~), or an abrupt throw completion.</li>
@@ -423,9 +475,15 @@
     </emu-alg>
   </emu-clause>
 
-  <emu-clause id="sec-isvalidintegerindex" aoid="IsValidIntegerIndex">
-    <h1>IsValidIntegerIndex ( _O_, _index_ )</h1>
-    <p>The abstract operation IsValidIntegerIndex takes arguments _O_, and _index_. It performs the following steps when called:</p>
+  <emu-clause id="sec-isvalidintegerindex" type="abstract operation">
+    <h1>
+      IsValidIntegerIndex (
+        _O_: an Integer-Indexed exotic object,
+        _index_: a Number,
+      )
+    </h1>
+    <dl class="header">
+    </dl>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. <del>If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *false*.</del>
@@ -440,9 +498,15 @@
   </emu-clause>
 
   <ins class="block">
-  <emu-clause id="sec-integerindexedobjectbytelength" aoid="IntegerIndexedObjectByteLength">
-    <h1>IntegerIndexedObjectByteLength ( _O_, _getBufferByteLength_ )</h1>
-    <p>The abstract operation IntegerIndexedObjectByteLength takes arguments _O_ and _getBufferByteLength_. It performs the following steps when called:</p>
+  <emu-clause id="sec-integerindexedobjectbytelength" type="abstract operation">
+    <h1>
+      IntegerIndexedObjectByteLength (
+        _O_: an Integer-Indexed exotic object,
+        _getBufferByteLength_: an Abstract Closure,
+      )
+    </h1>
+    <dl class="header">
+    </dl>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _length_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).
@@ -453,9 +517,15 @@
     </emu-alg>
     </emu-clause>
 
-  <emu-clause id="sec-integerindexedobjectlength" aoid="IntegerIndexedObjectLength">
-    <h1>IntegerIndexedObjectLength ( _O_, _getBufferByteLength_ )</h1>
-    <p>The abstract operation IntegerIndexedObjectLength takes arguments _O_ and _getBufferByteLength_. It performs the following steps when called:</p>
+  <emu-clause id="sec-integerindexedobjectlength" type="abstract operation">
+    <h1>
+      IntegerIndexedObjectLength (
+        _O_: an Integer-Indexed exotic object,
+        _getBufferByteLength_: an Abstract Closure,
+      )
+    </h1>
+    <dl class="header">
+    </dl>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return ~out-of-bounds~.
@@ -470,9 +540,17 @@
     </emu-alg>
   </emu-clause>
 
-  <emu-clause id="sec-isintegerindexedobjectoutofbounds" aoid="IsIntegerIndexedObjectOutOfBounds">
-    <h1>IsIntegerIndexedObjectOutOfBounds ( _O_, _getBufferByteLength_ )</h1>
-    <p>The abstract operation IsIntegerIndexedObjectOutOfBounds takes arguments _O_ and _getBufferByteLength_. It checks if any part of the underlying viewed buffer is out of bounds. It performs the following steps when called:</p>
+  <emu-clause id="sec-isintegerindexedobjectoutofbounds" type="abstract operation">
+    <h1>
+      IsIntegerIndexedObjectOutOfBounds (
+        _O_: an Integer-Indexed exotic object,
+        _getBufferByteLength_: an Abstract Closure,
+      )
+    </h1>
+    <dl class="header">
+      <dt>description</dt>
+      <dd>It checks if any part of the underlying viewed buffer is out of bounds.</dd>
+    </dl>
     <emu-alg>
       1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
@@ -498,9 +576,14 @@
   <emu-clause id="sec-properties-of-the-%typedarrayprototype%-object-mods">
     <h1>Modifications to Properties of the %TypedArray.prototype% Object</h1>
 
-    <emu-clause id="sec-validatetypedarray" aoid="ValidateTypedArray">
-      <h1>Runtime Semantics: ValidateTypedArray ( _O_ )</h1>
-      <p>The abstract operation ValidateTypedArray takes argument _O_. It performs the following steps when called:</p>
+    <emu-clause id="sec-validatetypedarray" type="abstract operation">
+      <h1>
+        ValidateTypedArray (
+          _O_: unknown,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
@@ -679,9 +762,18 @@
       </emu-note>
     </emu-clause>
 
-    <emu-clause id="sec-settypedarrayfromtypedarray" aoid="SetTypedArrayFromTypedArray" oldids="sec-%typedarray%.prototype.set-typedarray-offset">
-      <h1>SetTypedArrayFromTypedArray ( _target_, _targetOffset_, _source_ )</h1>
-      <p>The abstract operation SetTypedArrayFromTypedArray takes arguments _target_ (a TypedArray object), _targetOffset_ (a non-negative integer or +&infin;), and _source_ (a TypedArray object). It sets multiple values in _target_, starting at index _targetOffset_, reading the values from _source_. It performs the following steps when called:</p>
+    <emu-clause id="sec-settypedarrayfromtypedarray" type="abstract operation" oldids="sec-%typedarray%.prototype.set-typedarray-offset">
+      <h1>
+        SetTypedArrayFromTypedArray (
+          _target_: a TypedArray,
+          _targetOffset_: a non-negative integer or +&infin;,
+          _source_: a TypedArray,
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It sets multiple values in _target_, starting at index _targetOffset_, reading the values from _source_.</dd>
+      </dl>
       <emu-alg>
         1. Assert: _source_ is an Object that has a [[TypedArrayName]] internal slot.
         1. Let _targetBuffer_ be _target_.[[ViewedArrayBuffer]].
@@ -735,9 +827,15 @@
   <emu-clause id="sec-typedarray-constructors-mods">
     <h1>Modifications to the _TypedArray_ Constructors</h1>
 
-    <emu-clause id="sec-initializetypedarrayfromtypedarray" aoid="InitializeTypedArrayFromTypedArray" oldids="sec-typedarray-typedarray">
-      <h1>InitializeTypedArrayFromTypedArray ( _O_, _srcArray_ )</h1>
-      <p>The abstract operation InitializeTypedArrayFromTypedArray takes arguments _O_ (a TypedArray object) and _srcArray_ (a TypedArray object). It performs the following steps when called:</p>
+    <emu-clause id="sec-initializetypedarrayfromtypedarray" type="abstract operation" oldids="sec-typedarray-typedarray">
+      <h1>
+        InitializeTypedArrayFromTypedArray (
+          _O_: a TypedArray,
+          _srcArray_: a TypedArray,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: _O_ is an Object that has a [[TypedArrayName]] internal slot.
         1. Assert: _srcArray_ is an Object that has a [[TypedArrayName]] internal slot.
@@ -781,9 +879,17 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-initializetypedarrayfromarraybuffer" aoid="InitializeTypedArrayFromArrayBuffer" oldids="sec-typedarray-buffer-byteoffset-length">
-      <h1>InitializeTypedArrayFromArrayBuffer ( _O_, _buffer_, _byteOffset_, _length_ )</h1>
-      <p>The abstract operation InitializeTypedArrayFromArrayBuffer takes arguments _O_ (a TypedArray object), _buffer_ (an ArrayBuffer object), _byteOffset_ (an ECMAScript language value), and _length_ (an ECMAScript language value). It performs the following steps when called:</p>
+    <emu-clause id="sec-initializetypedarrayfromarraybuffer" type="abstract operation" oldids="sec-typedarray-buffer-byteoffset-length">
+      <h1>
+        InitializeTypedArrayFromArrayBuffer (
+          _O_: a TypedArray,
+          _buffer_: an ArrayBuffer or a SharedArrayBuffer,
+          _byteOffset_: an ECMAScript language value,
+          _length_: an ECMAScript language value,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: _O_ is an Object that has a [[TypedArrayName]] internal slot.
         1. Assert: _buffer_ is an Object that has an [[ArrayBufferData]] internal slot.
@@ -826,9 +932,15 @@
     <h1>Modifications to Abstract Operations For DataView Objects</h1>
 
     <ins class="block">
-    <emu-clause id="sec-getviewbytelength" aoid="GetViewByteLength">
-      <h1>GetViewByteLength ( _view_, _getBufferByteLength_ )</h1>
-      <p>The abstract operation GetViewByteLength takes arguments _view_ and _getBufferByteLength_. It performs the following steps when called:</p>
+    <emu-clause id="sec-getviewbytelength" type="abstract operation">
+      <h1>
+        GetViewByteLength (
+          _view_: a DataView,
+          _getBufferByteLength_: an Abstract Closure,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
         1. If _view_.[[ByteLength]] is not ~auto~, then return _view_.[[ByteLength]].
@@ -837,9 +949,15 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-isviewoutofbounds" aoid="IsViewOutOfBounds">
-      <h1>IsViewOutOfBounds ( _view_, _getBufferByteLength_ )</h1>
-      <p>The abstract operation IsViewOutOfBounds takes arguments _view_ and _getBufferByteLength_. It performs the following steps when called:</p>
+    <emu-clause id="sec-isviewoutofbounds" type="abstract operation">
+      <h1>
+        IsViewOutOfBounds (
+          _view_: a DataView,
+          _getBufferByteLength_: an Abstract Closure,
+        )
+      </h1>
+      <dl class="header">
+      </dl>
       <emu-alg>
         1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
         1. Let _byteLength_ be GetViewByteLength(_view_, _getBufferByteLength_).
@@ -852,9 +970,19 @@
     </emu-clause>
     </ins>
 
-    <emu-clause id="sec-getviewvalue" aoid="GetViewValue">
-      <h1>GetViewValue ( _view_, _requestIndex_, _isLittleEndian_, _type_ )</h1>
-      <p>The abstract operation GetViewValue takes arguments _view_, _requestIndex_, _isLittleEndian_, and _type_. It is used by functions on DataView instances to retrieve values from the view's buffer. It performs the following steps when called:</p>
+    <emu-clause id="sec-getviewvalue" type="abstract operation">
+      <h1>
+        GetViewValue (
+          _view_: unknown,
+          _requestIndex_: unknown,
+          _isLittleEndian_: unknown,
+          _type_: unknown,
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It is used by functions on DataView instances to retrieve values from the view's buffer.</dd>
+      </dl>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
         1. Assert: _view_ has a [[ViewedArrayBuffer]] internal slot.
@@ -874,9 +1002,20 @@
       </emu-alg>
     </emu-clause>
 
-    <emu-clause id="sec-setviewvalue" aoid="SetViewValue">
-      <h1>SetViewValue ( _view_, _requestIndex_, _isLittleEndian_, _type_, _value_ )</h1>
-      <p>The abstract operation SetViewValue takes arguments _view_, _requestIndex_, _isLittleEndian_, _type_, and _value_. It is used by functions on DataView instances to store values into the view's buffer. It performs the following steps when called:</p>
+    <emu-clause id="sec-setviewvalue" type="abstract operation">
+      <h1>
+        SetViewValue (
+          _view_: unknown,
+          _requestIndex_: unknown,
+          _isLittleEndian_: unknown,
+          _type_: unknown,
+          _value_: unknown,
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It is used by functions on DataView instances to store values into the view's buffer.</dd>
+      </dl>
       <emu-alg>
         1. Perform ? RequireInternalSlot(_view_, [[DataView]]).
         1. Assert: _view_ has a [[ViewedArrayBuffer]] internal slot.
@@ -970,9 +1109,15 @@
 <emu-clause id="sec-abstract-operations-for-atomics-mods">
   <h1>Modifications to Abstract Operations for Atomics</h1>
 
-  <emu-clause id="sec-validateatomicaccess" aoid="ValidateAtomicAccess">
-    <h1>ValidateAtomicAccess ( _typedArray_, _requestIndex_ )</h1>
-    <p>The abstract operation ValidateAtomicAccess takes arguments _typedArray_ and _requestIndex_. It performs the following steps when called:</p>
+  <emu-clause id="sec-validateatomicaccess" type="abstract operation">
+    <h1>
+      ValidateAtomicAccess (
+        _typedArray_: a TypedArray,
+        _requestIndex_: unknown,
+      )
+    </h1>
+    <dl class="header">
+    </dl>
     <emu-alg>
       1. Assert: _typedArray_ is an Object that has a [[ViewedArrayBuffer]] internal slot.
       1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
