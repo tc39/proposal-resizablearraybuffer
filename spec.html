@@ -1073,7 +1073,8 @@
         1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
         1. If _view_.[[ByteLength]] is not ~auto~, then return _view_.[[ByteLength]].
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
-        1. Return _getBufferByteLength_(_buffer_).
+        1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
+        1. Return _bufferByteLength_ - _view_.[[ByteOffset]].
       </emu-alg>
     </emu-clause>
 
@@ -1088,11 +1089,10 @@
       </dl>
       <emu-alg>
         1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
-        1. Let _byteLength_ be GetViewByteLength(_view_, _getBufferByteLength_).
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *true*.
-        1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
-        1. If _view_.[[ByteOffset]] + _byteLength_ &gt; _bufferByteLength_, then return *true*.
+        1. If IsDetachedBuffer(_buffer_) is *true*, return *true*.
+        1. Let _byteLength_ be GetViewByteLength(_view_, _getBufferByteLength_).
+        1. If _byteLength &lt; 0, then return *true*.
         1. Return *false*.
       </emu-alg>
     </emu-clause>
