@@ -759,6 +759,7 @@
         1. Else,
           1. Let _bufferConstructor_ be %ArrayBuffer%.
         1. <ins>Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).</ins>
+        1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>If IsIntegerIndexedObjectOutOfBounds(_srcArray_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. <ins>Set _elementLength_ to IntegerIndexedObjectLength(_srcArray_, _getSrcBufferByteLength_).</ins>
         1. <ins>Set _byteLength_ to _elementSize_ &times; _elementLength_.</ins>
@@ -766,7 +767,8 @@
           1. <del>Let _data_ be ? CloneArrayBuffer(_srcData_, _srcByteOffset_, _byteLength_, _bufferConstructor_).</del>
           1. <ins>Let _srcBlock_ be _srcData_.[[ArrayBufferData]].</ins>
           1. <ins>Let _targetBlock_ be _data_.[[ArrayBufferData]].</ins>
-          1. <ins>Perform CopyDataBlockBytes(_targetBlock_, 0, _srcBlock_, _srcByteOffset_, _byteLength_).</ins>
+          1. <ins>Let _count_ be min(_byteLength_, _data_.[[ArrayBufferByteLength]]).</ins>
+          1. <ins>Perform CopyDataBlockBytes(_targetBlock_, 0, _srcBlock_, _srcByteOffset_, _count_).</ins>
         1. Else,
           1. <del>Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).</del>
           1. <del>If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.</del>
