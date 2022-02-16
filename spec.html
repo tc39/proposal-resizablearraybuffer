@@ -890,6 +890,43 @@
       </emu-note>
     </emu-clause>
 
+    <emu-clause id="sec-%typedarray%.prototype.subarray">
+      <h1>%TypedArray%.prototype.subarray ( _begin_, _end_ )</h1>
+      <p>Returns a new _TypedArray_ whose element type is the same as this _TypedArray_ and whose ArrayBuffer is the same as the ArrayBuffer of this _TypedArray_, referencing the elements at _begin_, inclusive, up to _end_, exclusive. If either _begin_ or _end_ is negative, it refers to an index from the end of the array, as opposed to from the beginning.</p>
+      <p>When the `subarray` method is called, the following steps are taken:</p>
+      <emu-alg>
+        1. Let _O_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
+        1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
+        1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
+        1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. Let _srcLength_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getSrcBufferByteLength_)</ins>.
+        1. <ins>If _srcLength_ is ~out-of-bounds~, set _srcLength_ to 0.</ins>
+        1. Let _relativeBegin_ be ? ToIntegerOrInfinity(_begin_).
+        1. If _relativeBegin_ is -&infin;, let _beginIndex_ be 0.
+        1. Else if _relativeBegin_ &lt; 0, let _beginIndex_ be max(_srcLength_ + _relativeBegin_, 0).
+        1. Else, let _beginIndex_ be min(_relativeBegin_, _srcLength_).
+        1. <ins>If _O_.[[ArrayLength]] is ~auto~ and _end_ is *undefined*, then</ins>
+          1. <ins>Let _newLength_ be *undefined*.</ins>
+        1. <ins>Else,</ins>
+          1. If _end_ is *undefined*, let _relativeEnd_ be _srcLength_; else let _relativeEnd_ be ? ToIntegerOrInfinity(_end_).
+          1. If _relativeEnd_ is -&infin;, let _endIndex_ be 0.
+          1. Else if _relativeEnd_ &lt; 0, let _endIndex_ be max(_srcLength_ + _relativeEnd_, 0).
+          1. Else, let _endIndex_ be min(_relativeEnd_, _srcLength_).
+          1. Let _newLength_ be max(_endIndex_ - _beginIndex_, 0).
+        1. Let _constructorName_ be the String value of _O_.[[TypedArrayName]].
+        1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
+        1. Let _srcByteOffset_ be _O_.[[ByteOffset]].
+        1. Let _beginByteOffset_ be _srcByteOffset_ + _beginIndex_ &times; _elementSize_.
+        1. <ins>If _newLength_ is *undefined*, then</ins>
+          1. <ins>Let _argumentsList_ be &laquo; _buffer_, 𝔽(_beginByteOffset_) &raquo;.</ins>
+        1. <ins>Else,</ins>
+          1. Let _argumentsList_ be &laquo; _buffer_, 𝔽(_beginByteOffset_), 𝔽(_newLength_) &raquo;.
+        1. Return ? TypedArraySpeciesCreate(_O_, _argumentsList_).
+      </emu-alg>
+      <p>This function is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
+    </emu-clause>
+
     <emu-clause id="sec-settypedarrayfromtypedarray" type="abstract operation" oldids="sec-%typedarray%.prototype.set-typedarray-offset">
       <h1>
         SetTypedArrayFromTypedArray (
