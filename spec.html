@@ -67,7 +67,6 @@
         1. Set _obj_.[[ArrayBufferData]] to _block_.
         1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
         1. <ins>If _maxByteLength_ is present and not ~empty~, then</ins>
-          1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
           1. <ins>If it is not possible to create a Data Block _block_ consisting of _maxByteLength_ bytes, throw a *RangeError* exception.</ins>
           1. <ins>NOTE: Resizable ArrayBuffers are designed to be implementable with in-place growth. Implementations reserve the right to throw if, for example, virtual memory cannot be reserved up front.</ins>
           1. <ins>Set _obj_.[[ArrayBufferMaxByteLength]] to _maxByteLength_.</ins>
