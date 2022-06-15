@@ -50,7 +50,7 @@
         AllocateArrayBuffer (
           _constructor_: unknown,
           _byteLength_: a non-negative integer,
-          <ins>optional _maxByteLength_: a non-negative integer,</ins>
+          <ins>optional _maxByteLength_: a non-negative integer or ~empty~,</ins>
         )
       </h1>
       <dl class="header">
@@ -59,12 +59,14 @@
       </dl>
       <emu-alg>
         1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;.</ins>
-        1. <ins>If _maxByteLength_ is present, append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+        1. <ins>If _maxByteLength_ is present and not ~empty~, then</ins>
+          1. <ins>If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.</ins>
+          1. <ins>Append [[ArrayBufferMaxByteLength]] to _slots_.</ins>
         1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%ArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]], [[ArrayBufferDetachKey]] &raquo;</del><ins>_slots_</ins>).
         1. Let _block_ be ? CreateByteDataBlock(_byteLength_).
         1. Set _obj_.[[ArrayBufferData]] to _block_.
         1. Set _obj_.[[ArrayBufferByteLength]] to _byteLength_.
-        1. <ins>If _maxByteLength_ is present, then</ins>
+        1. <ins>If _maxByteLength_ is present and not ~empty~, then</ins>
           1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
           1. <ins>If it is not possible to create a Data Block _block_ consisting of _maxByteLength_ bytes, throw a *RangeError* exception.</ins>
           1. <ins>NOTE: Resizable ArrayBuffers are designed to be implementable with in-place growth. Implementations reserve the right to throw if, for example, virtual memory cannot be reserved up front.</ins>
@@ -177,9 +179,6 @@
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
         1. Let _byteLength_ be ? ToIndex(_length_).
         1. <ins>Let _requestedMaxByteLength_ be ? GetArrayBufferMaxByteLengthOption(_options_).</ins>
-        1. <ins>If _requestedMaxByteLength_ is ~empty~, then</ins>
-          1. <ins>Return ? AllocateArrayBuffer(NewTarget, _byteLength_).</ins>
-        1. <ins>If _byteLength_ &gt; _requestedMaxByteLength_, throw a *RangeError* exception.</ins>
         1. Return ? AllocateArrayBuffer(NewTarget, _byteLength_<ins>, _requestedMaxByteLength_</ins>).
       </emu-alg>
     </emu-clause>
@@ -327,7 +326,7 @@
         AllocateSharedArrayBuffer (
           _constructor_: unknown,
           _byteLength_: a non-negative integer,
-          <ins>optional _maxByteLength_: a non-negative integer,</ins>
+          <ins>optional _maxByteLength_: a non-negative integer or ~empty~,</ins>
         )
       </h1>
       <dl class="header">
@@ -336,7 +335,9 @@
       </dl>
       <emu-alg>
         1. <ins>Let _slots_ be &laquo; [[ArrayBufferData]] &raquo;.</ins>
-        1. <ins>If _maxByteLength_ is present, append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
+        1. <ins>If _maxByteLength_ is present and not ~empty~, then</ins>
+          1. <ins>If _byteLength_ &gt; _maxByteLength_, throw a *RangeError* exception.</ins>
+          1. <ins>Append [[ArrayBufferByteLengthData]] and [[ArrayBufferMaxByteLength]] to _slots_.</ins>
         1. <ins>Else, append [[ArrayBufferByteLength]] to _slots_.</ins>
         1. Let _obj_ be ? OrdinaryCreateFromConstructor(_constructor_, *"%SharedArrayBuffer.prototype%"*, <del>&laquo; [[ArrayBufferData]], [[ArrayBufferByteLength]] &raquo;</del><ins>_slots_</ins>).
         1. <ins>If _maxByteLength_ is present, then let _allocLength_ be _maxByteLength_.</ins>
@@ -344,7 +345,7 @@
         1. Let _block_ be ? CreateSharedByteDataBlock(<del>_byteLength_</del><ins>_allocLength_</ins>).
         1. <ins>NOTE: Growable SharedArrayBuffers must be implemented as in-place growable. Creation of a _maxByteLength_ sized Data Block is a specification mechanism. It may be implemented as committing a _byteLength_ sized buffer while reserving _maxByteLength_ in virtual memory.</ins>
         1. Set _obj_.[[ArrayBufferData]] to _block_.
-        1. <ins>If _maxByteLength_ is present, then</ins>
+        1. <ins>If _maxByteLength_ is present and not ~empty~, then</ins>
           1. <ins>Assert: _byteLength_ &le; _maxByteLength_.</ins>
           1. <ins>Let _byteLengthBlock_ be ? CreateSharedByteDataBlock(8).</ins>
           1. <ins>Perform SetValueInBuffer(_byteLengthBlock_, 0, ~BigUint64~, ℤ(_byteLength_), *true*, ~SeqCst~).</ins>
@@ -390,9 +391,6 @@
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
         1. Let _byteLength_ be ? ToIndex(_length_).
         1. <ins>Let _requestedMaxByteLength_ be ? GetArrayBufferMaxByteLengthOption(_options_).</ins>
-        1. <ins>If _requestedMaxByteLength_ is ~empty~, then</ins>
-          1. <ins>Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_).</ins>
-        1. <ins>If _byteLength_ &gt; _requestedMaxByteLength_, throw a *RangeError* exception.</ins>
         1. Return ? AllocateSharedArrayBuffer(NewTarget, _byteLength_<ins>, _requestedMaxByteLength_</ins>).
       </emu-alg>
     </emu-clause>
