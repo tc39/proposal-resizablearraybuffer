@@ -297,7 +297,7 @@
           1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
           1. Let _newByteLength_ be _O_.[[ArrayBufferByteLength]].
         1. Else,
-          1. Let _newByteLength_ be ? ToIntegerOrInfinity(_newLength_).
+          1. Let _newByteLength_ be ? ToIndex(_newLength_).
           1. If IsDetachedBuffer(_O_) is *true*, throw a *TypeError* exception.
         1. Let _new_ be ? Construct(%ArrayBuffer%, &laquo; 𝔽(_newByteLength_) &raquo;).
         1. NOTE: This method returns a fixed-length ArrayBuffer.
