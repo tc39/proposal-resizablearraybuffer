@@ -45,6 +45,29 @@
       </emu-note>
     </emu-clause>
 
+    <emu-clause id="sec-clonearraybuffer" type="abstract operation">
+      <h1>
+        CloneArrayBuffer (
+          _srcBuffer_: an ArrayBuffer or a SharedArrayBuffer,
+          _srcByteOffset_: a non-negative integer,
+          _srcLength_: a non-negative integer,
+          <del>_cloneConstructor_: a constructor,</del>
+        )
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It creates a new ArrayBuffer whose data is a copy of _srcBuffer_'s data over the range starting at _srcByteOffset_ and continuing for _srcLength_ bytes.</dd>
+      </dl>
+      <emu-alg>
+        1. Let _targetBuffer_ be ? AllocateArrayBuffer(<del>_cloneConstructor_</del><ins>%ArrayBuffer%</ins>, _srcLength_).
+        1. If IsDetachedBuffer(_srcBuffer_) is *true*, throw a *TypeError* exception.
+        1. Let _srcBlock_ be _srcBuffer_.[[ArrayBufferData]].
+        1. Let _targetBlock_ be _targetBuffer_.[[ArrayBufferData]].
+        1. Perform CopyDataBlockBytes(_targetBlock_, 0, _srcBlock_, _srcByteOffset_, _srcLength_).
+        1. Return _targetBuffer_.
+      </emu-alg>
+    </emu-clause>
+
     <emu-clause id="sec-allocatearraybuffer" type="abstract operation">
       <h1>
         AllocateArrayBuffer (
@@ -966,7 +989,7 @@
         1. Else, let _same_ be SameValue(_srcBuffer_, _targetBuffer_).
         1. If _same_ is *true*, then
           1. Let _srcByteLength_ be <del>_source_.[[ByteLength]]</del><ins>IntegerIndexedObjectByteLength(_source_, _getSrcBufferByteLength_)</ins>.
-          1. Set _srcBuffer_ to ? CloneArrayBuffer(_srcBuffer_, _srcByteOffset_, _srcByteLength_, %ArrayBuffer%).
+          1. Set _srcBuffer_ to ? CloneArrayBuffer(_srcBuffer_, _srcByteOffset_, _srcByteLength_<del>, %ArrayBuffer%</del>).
           1. NOTE: %ArrayBuffer% is used to clone _srcBuffer_ because is it known to not have any observable side-effects.
           1. Let _srcByteIndex_ be 0.
         1. Else, let _srcByteIndex_ be _srcByteOffset_.
