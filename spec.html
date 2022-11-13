@@ -257,7 +257,7 @@
         1. Let _fromBuf_ be _O_.[[ArrayBufferData]].
         1. Let _toBuf_ be _new_.[[ArrayBufferData]].
         1. <ins>If _first_ &lt; _O_.[[ArrayBufferByteLength]], then</ins>
-          1. Perform CopyDataBlockBytes(_toBuf_, 0, _fromBuf_, _first_, <ins>min(_O_.[[ArrayBufferByteLenth]], </ins>_newLen_<ins>)</ins>).
+          1. Perform CopyDataBlockBytes(_toBuf_, 0, _fromBuf_, _first_, <ins>min(_O_.[[ArrayBufferByteLength]], </ins>_newLen_<ins>)</ins>).
         1. Return _new_.
       </emu-alg>
     </emu-clause>
