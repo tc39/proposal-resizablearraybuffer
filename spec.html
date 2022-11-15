@@ -810,7 +810,7 @@
         1. Let _O_ be the *this* value.
         1. Perform ? ValidateTypedArray(_O_).
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. Let _len_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>.
+        1. Let _len_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>.
         1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
         1. If _relativeStart_ is -&infin;, let _k_ be 0.
         1. Else if _relativeStart_ &lt; 0, let _k_ be max(_len_ + _relativeStart_, 0).
