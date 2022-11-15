@@ -3,7 +3,7 @@
 	"scripts": {
 		"start": "npm run build-loose -- --watch",
 		"build": "npm run build-loose -- --strict",
-		"build-loose": "ecmarkup --verbose spec.html docs/index.html --js-out docs/ecmarkup.js --css-out docs/ecmarkup.css"
+		"build-loose": "ecmarkup --verbose --load-biblio @tc39/ecma262-biblio spec.html docs/index.html --js-out docs/ecmarkup.js --css-out docs/ecmarkup.css"
 	},
 	"homepage": "https://github.com/tc39/proposal-resizablearraybuffer#readme",
 	"repository": {
@@ -12,6 +12,7 @@
 	},
 	"license": "MIT",
 	"devDependencies": {
-		"ecmarkup": "^9.4.0"
+		"ecmarkup": "^15.0.4",
+		"@tc39/ecma262-biblio": "2.1.2474"
 	}
 }
