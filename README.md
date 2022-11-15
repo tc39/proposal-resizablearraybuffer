@@ -50,16 +50,16 @@ Having a resizable `ArrayBuffer` would let WebGPU explain repointing as a resize
 
 ```javascript
 class ArrayBuffer {
-  // If the options parameter is not an object with a "maximumByteLength"
+  // If the options parameter is not an object with a "maxByteLength"
   // property, the ArrayBuffer can neither grow nor shrink (status quo).
   // Otherwise it is resizable.
   //
   // A resizable ArrayBuffer can grow up to the provided
-  // options.maximumByteLength and shrink.
+  // options.maxByteLength and shrink.
   //
-  // If options is an object with a "maximumByteLength" property,
-  // - Throws a RangeError if maximumByteLength is not finite.
-  // - Throws a RangeError if byteLength > maximumByteLength.
+  // If options is an object with a "maxByteLength" property,
+  // - Throws a RangeError if maxByteLength is not finite.
+  // - Throws a RangeError if byteLength > maxByteLength.
   constructor(byteLength [, options ]);
 
   // Returns a *non*-resizable ArrayBuffer with the same byte content
@@ -84,7 +84,7 @@ class ArrayBuffer {
   // no realloc.
   //
   // Throws a TypeError if the this value is not resizable.
-  // Throws a RangeError unless 0 <= newByteLength <= this.maximumByteLength.
+  // Throws a RangeError unless 0 <= newByteLength <= this.maxByteLength.
   //
   // Can throw OOM.
   resize(newByteLength);
@@ -102,7 +102,7 @@ class ArrayBuffer {
   // If not resizable, returns the byte length.
   //
   // No setter.
-  get maximumByteLength();
+  get maxByteLength();
 
   // No setter.
   get byteLength();
@@ -114,9 +114,9 @@ class ArrayBuffer {
 Example:
 
 ```javascript
-let rab = new ArrayBuffer(1024, { maximumByteLength: 1024 ** 2 });
+let rab = new ArrayBuffer(1024, { maxByteLength: 1024 ** 2 });
 assert(rab.byteLength === 1024);
-assert(rab.maximumByteLength === 1024 ** 2);
+assert(rab.maxByteLength === 1024 ** 2);
 assert(rab.resizable);
 
 rab.resize(rab.byteLength * 2);
@@ -126,7 +126,7 @@ assert(rab.byteLength === 1024 * 2);
 let ab = rab.transfer(1024);
 // rab is now detached
 assert(rab.byteLength === 0);
-assert(rab.maximumByteLength === 0);
+assert(rab.maxByteLength === 0);
 
 // The contents are moved to ab.
 assert(!ab.resizable);
@@ -137,16 +137,16 @@ assert(ab.byteLength === 1024);
 
 ```javascript
 class SharedArrayBuffer {
-  // If the options parameter is not an object with a "maximumByteLength"
+  // If the options parameter is not an object with a "maxByteLength"
   // property, the SharedArrayBuffer cannot grow (status quo).
   // Otherwise it is growable.
   //
   // A growable SharedArrayBuffer can only grow up to the provided
-  // options.maximumByteLength.
+  // options.maxByteLength.
   //
-  // If options is an object with a "maximumByteLength" property,
-  // - Throws a RangeError if options.maximumByteLength is not finite.
-  // - Throws a RangeError if byteLength > options.maximumByteLength.
+  // If options is an object with a "maxByteLength" property,
+  // - Throws a RangeError if options.maxByteLength is not finite.
+  // - Throws a RangeError if byteLength > options.maxByteLength.
   constructor(byteLength [, options ]);
 
   // Grows the buffer.
@@ -160,7 +160,7 @@ class SharedArrayBuffer {
   // Throws a TypeError if the `this` value is not a growable
   // SharedArrayBuffer.
   // Throws a RangeError unless
-  // this.byteLength <= newByteLength <= this.maximumByteLength.
+  // this.byteLength <= newByteLength <= this.maxByteLength.
   //
   // Can throw OOM.
   grow(newByteLength);
@@ -178,7 +178,7 @@ class SharedArrayBuffer {
   // If not resizable, returns the byte length.
   //
   // No setter.
-  get maximumByteLength();
+  get maxByteLength();
 
   // No setter.
   get byteLength();
@@ -212,7 +212,7 @@ Growable `SharedArrayBuffer`s can only grow, so TAs backed by growable `SharedAr
 An example:
 
 ```javascript
-let rab = new ArrayBuffer(1024, { maximumByteLength: 1024 ** 2 });
+let rab = new ArrayBuffer(1024, { maxByteLength: 1024 ** 2 });
 // 0 offset, auto length
 let U32a = new Uint32Array(rab);
 assert(U32a.length === 256); // (1024 - 0) / 4
