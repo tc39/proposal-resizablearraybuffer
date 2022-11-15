@@ -777,7 +777,7 @@
         1. Let _O_ be the *this* value.
         1. Perform ? ValidateTypedArray(_O_).
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. Let _len_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>.
+        1. Let _len_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>.
         1. <ins>Assert: _len_ is not ~out-of-bounds~.</ins>
         1. If _O_.[[ContentType]] is ~BigInt~, set _value_ to ? ToBigInt(_value_).
         1. Otherwise, set _value_ to ? ToNumber(_value_).
