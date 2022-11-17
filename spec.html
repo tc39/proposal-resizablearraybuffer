@@ -1052,16 +1052,18 @@
         GetViewByteLength (
           _view_: a DataView,
           _getBufferByteLength_: an Abstract Closure,
-        )
+        ): a non-negative integer or ~out-of-bounds~
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
+        1. If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, return ~out-of-bounds~.
         1. If _view_.[[ByteLength]] is not ~auto~, return _view_.[[ByteLength]].
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
-        1. Return _bufferByteLength_ - _view_.[[ByteOffset]].
+        1. Assert: IsResizableArrayBuffer(_buffer_) is *true*.
+        1. Let _byteOffset_ be _view_.[[ByteOffset]].
+        1. Return _bufferByteLength_ - _byteOffset_.
       </emu-alg>
     </emu-clause>
 
@@ -1075,11 +1077,16 @@
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: Type(_view_) is Object and _view_ has a [[DataView]] internal slot.
         1. Let _buffer_ be _view_.[[ViewedArrayBuffer]].
         1. If IsDetachedBuffer(_buffer_) is *true*, return *true*.
-        1. Let _byteLength_ be GetViewByteLength(_view_, _getBufferByteLength_).
-        1. If _byteLength_ &lt; 0, return *true*.
+        1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
+        1. Let _byteOffsetStart_ be _view_.[[ByteOffset]].
+        1. If _view_.[[ByteLength]] is ~auto~, then
+          1. Let _byteOffsetEnd_ be _bufferByteLength_.
+        1. Else,
+          1. Let _byteOffsetEnd_ be _byteOffsetStart_ + _view_.[[ByteLength]].
+        1. If _byteOffsetStart_ &gt; _bufferByteLength_ or _byteOffsetEnd_ &gt; _bufferByteLength_, return *true*.
+        1. NOTE: 0-length DataViews are not considered out-of-bounds.
         1. Return *false*.
       </emu-alg>
     </emu-clause>
@@ -1107,9 +1114,9 @@
         1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
-        1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_, _getBufferByteLength_)</ins>.
+        1. <ins>If _viewSize_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for Element Type _type_.
         1. If _getIndex_ + _elementSize_ &gt; _viewSize_, throw a *RangeError* exception.
         1. Let _bufferIndex_ be _getIndex_ + _viewOffset_.
@@ -1142,9 +1149,9 @@
         1. <del>If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _view_'s backing buffer is a growable SharedArrayBuffer.</ins>
-        1. <ins>If IsViewOutOfBounds(_view_, _getBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
         1. Let _viewOffset_ be _view_.[[ByteOffset]].
         1. Let _viewSize_ be <del>_view_.[[ByteLength]]</del><ins>GetViewByteLength(_view_, _getBufferByteLength_)</ins>.
+        1. <ins>If _viewSize_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for Element Type _type_.
         1. If _getIndex_ + _elementSize_ &gt; _viewSize_, throw a *RangeError* exception.
         1. Let _bufferIndex_ be _getIndex_ + _viewOffset_.
