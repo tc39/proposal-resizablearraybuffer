@@ -27,19 +27,18 @@
       <h1>
         DetachArrayBuffer (
           _arrayBuffer_: an ArrayBuffer,
-          optional _key_: unknown,
-        )
+          optional _key_: anything,
+        ): either a normal completion containing ~unused~ or a throw completion
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: Type(_arrayBuffer_) is Object and it has [[ArrayBufferData]], [[ArrayBufferByteLength]], and [[ArrayBufferDetachKey]] internal slots.
         1. Assert: IsSharedArrayBuffer(_arrayBuffer_) is *false*.
         1. If _key_ is not present, set _key_ to *undefined*.
-        1. If SameValue(_arrayBuffer_.[[ArrayBufferDetachKey]], _key_) is *false*, throw a *TypeError* exception.
+        1. If _arrayBuffer_.[[ArrayBufferDetachKey]] is not _key_, throw a *TypeError* exception.
         1. Set _arrayBuffer_.[[ArrayBufferData]] to *null*.
         1. Set _arrayBuffer_.[[ArrayBufferByteLength]] to 0.
-        1. Return NormalCompletion(*null*).
+        1. Return ~unused~.
       </emu-alg>
       <emu-note>
         <p>Detaching an ArrayBuffer instance disassociates the Data Block used as its backing store from the instance and sets the byte length of the buffer to 0. <del>No operations defined by this specification use the DetachArrayBuffer abstract operation. However, an ECMAScript host or implementation may define such operations.</del></p>
@@ -49,10 +48,10 @@
     <emu-clause id="sec-allocatearraybuffer" type="abstract operation">
       <h1>
         AllocateArrayBuffer (
-          _constructor_: unknown,
+          _constructor_: a constructor,
           _byteLength_: a non-negative integer,
           <ins>optional _maxByteLength_: a non-negative integer or ~empty~,</ins>
-        )
+        ): either a normal completion containing an ArrayBuffer or a throw completion
       </h1>
       <dl class="header">
         <dt>description</dt>
@@ -81,12 +80,11 @@
         ArrayBufferByteLength (
           _arrayBuffer_: an ArrayBuffer,
           _order_: ~SeqCst~ or ~Unordered~,
-        )
+        ): a non-negative integer
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
         1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
           1. Let _bufferByteLengthBlock_ be _arrayBuffer_.[[ArrayBufferByteLengthData]].
           1. Return ℝ(GetValueFromBuffer(_bufferByteLengthBlock_, 0, ~BigUint64~, *true*, _order_)).
@@ -99,7 +97,7 @@
       <h1>
         MakeIdempotentArrayBufferByteLengthGetter (
           _order_: ~SeqCst~ or ~Unordered~,
-        )
+        ): an Abstract Closure with one parameter
       </h1>
       <dl class="header">
         <dt>description</dt>
@@ -123,12 +121,11 @@
       <h1>
         IsResizableArrayBuffer (
           _arrayBuffer_: an ArrayBuffer,
-        )
+        ): a Boolean
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: Type(_arrayBuffer_) is Object and _arrayBuffer_ has an [[ArrayBufferData]] internal slot.
         1. If _arrayBuffer_ has an [[ArrayBufferMaxByteLength]] internal slot, return *true*.
         1. Return *false*.
       </emu-alg>
@@ -138,7 +135,7 @@
       <h1>
         GetArrayBufferMaxByteLengthOption (
           _options_: an ECMAScript language value,
-        )
+        ): a normal completion containing either a non-negative integer or ~empty~
       </h1>
       <dl class="header">
       </dl>
@@ -155,7 +152,7 @@
         HostResizeArrayBuffer (
           _buffer_: an ArrayBuffer,
           _newByteLength_: a non-negative integer,
-        )
+        ): either a normal completion containing either ~handled~ or ~unhandled~, or a throw completion
       </h1>
       <dl class="header">
         <dt>description</dt>
@@ -235,7 +232,7 @@
 
     <emu-clause id="sec-arraybuffer.prototype.slice">
       <h1>ArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
-      <p>The following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
@@ -294,7 +291,7 @@
 
     <emu-clause id="sec-arraybuffer.prototype.transfer">
       <h1>ArrayBuffer.prototype.transfer ( [ _newLength_ ] )</h1>
-      <p>The following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
@@ -332,10 +329,10 @@
     <emu-clause id="sec-allocatesharedarraybuffer" type="abstract operation">
       <h1>
         AllocateSharedArrayBuffer (
-          _constructor_: unknown,
+          _constructor_: a constructor,
           _byteLength_: a non-negative integer,
           <ins>optional _maxByteLength_: a non-negative integer or ~empty~,</ins>
-        )
+        ): either a normal completion containing a SharedArrayBuffer or a throw completion
       </h1>
       <dl class="header">
         <dt>description</dt>
@@ -367,7 +364,12 @@
 
     <ins class="block">
     <emu-clause id="sec-hostgrowsharedarraybuffer" type="host-defined abstract operation">
-      <h1>HostGrowSharedArrayBuffer ( _buffer_, _newByteLength_ )</h1>
+      <h1>
+        HostGrowSharedArrayBuffer (
+          _buffer_: a SharedArrayBuffer,
+          _newByteLength_: a non-negative integer
+        ): either a normal completion containing either ~handled~ or ~unhandled~, or a throw completion
+      </h1>
       <dl class="header">
         <dt>description</dt>
         <dd>It gives the host an opportunity to perform implementation-defined growing of _buffer_. If the host chooses not to handle resizing of _buffer_, it may return ~unhandled~ for the default behaviour.</dd>
@@ -414,8 +416,7 @@
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
         1. If IsSharedArrayBuffer(_O_) is *false*, throw a *TypeError* exception.
-        1. <del>Let _length_ be _O_.[[ArrayBufferByteLength]].</del>
-        1. <ins>Let _length_ be ArrayBufferByteLength(_O_, ~SeqCst~).</ins>
+        1. Let _length_ be <del>_O_.[[ArrayBufferByteLength]]</del><ins>ArrayBufferByteLength(_O_, ~SeqCst~)</ins>.
         1. Return 𝔽(_length_).
       </emu-alg>
     </emu-clause>
@@ -474,7 +475,7 @@
             1. Return _newBytes_.
           1. Let _newByteLengthBytes_ be NumericToRawBytes(~BigUint64~, ℤ(_newByteLength_), _isLittleEndian_).
           1. Let _event_ be ReadModifyWriteSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8, [[Payload]]: _newByteLengthBytes_, [[ModifyOp]]: _second_ }.
-          1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism, an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
+          1. NOTE: The new memory is already zeroed, as a _O_.[[ArrayBufferMaxByteLength]] sized Data Block is already allocated. This is a specification mechanism; an implementation is not required to reserve _O_.[[ArrayBufferMaxByteLength]] bytes of physical memory.
         1. Else,
           1. Let _event_ be ReadSharedMemory { [[Order]]: ~SeqCst~, [[NoTear]]: *true*, [[Block]]: _byteLengthBlock_, [[ByteIndex]]: 0, [[ElementSize]]: 8 }.
         1. Let _execution_ be the [[CandidateExecution]] field of the surrounding agent's Agent Record.
@@ -493,7 +494,7 @@
 
     <emu-clause id="sec-sharedarraybuffer.prototype.slice">
       <h1>SharedArrayBuffer.prototype.slice ( _start_, _end_ )</h1>
-      <p>The following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[ArrayBufferData]]).
@@ -527,9 +528,12 @@
 <emu-clause id="sec-integer-indexed-exotic-objects-mods">
   <h1>Modifications to Integer-Indexed Exotic Objects</h1>
 
-  <emu-clause id="sec-integer-indexed-exotic-objects-ownpropertykeys">
-    <h1>[[OwnPropertyKeys]] ( )</h1>
-    <p>The [[OwnPropertyKeys]] internal method of an Integer-Indexed exotic object _O_ takes no arguments. It performs the following steps when called:</p>
+  <emu-clause id="sec-integer-indexed-exotic-objects-ownpropertykeys" type="internal method">
+    <h1>[[OwnPropertyKeys]] ( ): a normal completion containing a List of property keys</h1>
+    <dl class="header">
+      <dt>for</dt>
+      <dd>an Integer-Indexed exotic object _O_</dd>
+    </dl>
     <emu-alg>
       1. Let _keys_ be a new empty List.
       1. Assert: _O_ is an Integer-Indexed exotic object.
@@ -553,13 +557,12 @@
     <h1>
       IsValidIntegerIndex (
         _O_: an Integer-Indexed exotic object,
-        _index_: a Number,
-      )
+       _index_: a Number,
+      ): a Boolean
     </h1>
     <dl class="header">
     </dl>
     <emu-alg>
-      1. Assert: _O_ is an Integer-Indexed exotic object.
       1. <del>If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *false*.</del>
       1. If IsIntegralNumber(_index_) is *false*, return *false*.
       1. If _index_ is *-0*<sub>𝔽</sub>, return *false*.
@@ -577,16 +580,15 @@
       IntegerIndexedObjectByteLength (
         _O_: an Integer-Indexed exotic object,
         _getBufferByteLength_: an Abstract Closure,
-      )
+      ): a non-negative integer
     </h1>
     <dl class="header">
     </dl>
     <emu-alg>
-      1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _length_ be IntegerIndexedObjectLength(_O_, _getBufferByteLength_).
       1. If _length_ is ~out-of-bounds~ or _length_ = 0, return 0.
       1. If _O_.[[ByteLength]] is not ~auto~, return _O_.[[ByteLength]].
-      1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
+      1. Let _elementSize_ be TypedArrayElementSize(_O_).
       1. Return _length_ &times; _elementSize_.
     </emu-alg>
     </emu-clause>
@@ -596,21 +598,19 @@
       IntegerIndexedObjectLength (
         _O_: an Integer-Indexed exotic object,
         _getBufferByteLength_: an Abstract Closure,
-      )
+      ): a non-negative integer or ~out-of-bounds~
     </h1>
     <dl class="header">
     </dl>
     <emu-alg>
-      1. Assert: _O_ is an Integer-Indexed exotic object.
       1. If IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *true*, return ~out-of-bounds~.
       1. If _O_.[[ArrayLength]] is not ~auto~, return _O_.[[ArrayLength]].
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
       1. Assert: IsResizableArrayBuffer(_buffer_) is *true*.
       1. Let _byteOffset_ be _O_.[[ByteOffset]].
-      1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
-      1. Let _length_ be floor((_bufferByteLength_ - _byteOffset_) / _elementSize_).
-      1. Return _length_.
+      1. Let _elementSize_ be TypedArrayElementSize(_O_).
+      1. Return floor((_bufferByteLength_ - _byteOffset_) / _elementSize_).
     </emu-alg>
   </emu-clause>
 
@@ -619,14 +619,13 @@
       IsIntegerIndexedObjectOutOfBounds (
         _O_: an Integer-Indexed exotic object,
         _getBufferByteLength_: an Abstract Closure,
-      )
+      ): a Boolean
     </h1>
     <dl class="header">
       <dt>description</dt>
       <dd>It checks if any of the object's numeric properties reference a value at an index not contained within the underlying data block's bounds.</dd>
     </dl>
     <emu-alg>
-      1. Assert: _O_ is an Integer-Indexed exotic object.
       1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
       1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, return *true*.
       1. Let _bufferByteLength_ be _getBufferByteLength_(_buffer_).
@@ -634,7 +633,7 @@
       1. If _O_.[[ArrayLength]] is ~auto~, then
         1. Let _byteOffsetEnd_ be _bufferByteLength_.
       1. Else,
-        1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _O_.[[TypedArrayName]].
+        1. Let _elementSize_ be TypedArrayElementSize(_O_).
         1. Let _byteOffsetEnd_ be _byteOffsetStart_ + _O_.[[ArrayLength]] &times; _elementSize_.
       1. If _byteOffsetStart_ &gt; _bufferByteLength_ or _byteOffsetEnd_ &gt; _bufferByteLength_, return *true*.
       1. NOTE: 0-length TypedArrays are not considered out-of-bounds.
@@ -653,8 +652,8 @@
     <emu-clause id="sec-validatetypedarray" type="abstract operation">
       <h1>
         ValidateTypedArray (
-          _O_: unknown,
-        )
+          _O_: an ECMAScript language value,
+        ): either a normal completion containing ~unused~ or a throw completion
       </h1>
       <dl class="header">
       </dl>
@@ -720,7 +719,7 @@
     <emu-clause id="sec-%typedarray%.prototype.copywithin">
       <h1>%TypedArray%.prototype.copyWithin ( _target_, _start_ [ , _end_ ] )</h1>
       <p>The interpretation and use of the arguments of %TypedArray%`.prototype.copyWithin` are the same as for `Array.prototype.copyWithin` as defined in <emu-xref href="#sec-array.prototype.copywithin"></emu-xref>.</p>
-      <p>When the `copyWithin` method is called, the following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? ValidateTypedArray(_O_).
@@ -773,7 +772,7 @@
     <emu-clause id="sec-%typedarray%.prototype.fill">
       <h1>%TypedArray%.prototype.fill ( _value_ [ , _start_ [ , _end_ ] ] )</h1>
       <p>The interpretation and use of the arguments of %TypedArray%`.prototype.fill` are the same as for `Array.prototype.fill` as defined in <emu-xref href="#sec-array.prototype.fill"></emu-xref>.</p>
-      <p>When the `fill` method is called, the following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? ValidateTypedArray(_O_).
@@ -806,7 +805,7 @@
     <emu-clause id="sec-%typedarray%.prototype.slice">
       <h1>%TypedArray%.prototype.slice ( _start_, _end_ )</h1>
       <p>The interpretation and use of the arguments of %TypedArray%`.prototype.slice` are the same as for `Array.prototype.slice` as defined in <emu-xref href="#sec-array.prototype.slice"></emu-xref>. The following steps are taken:</p>
-      <p>When the `slice` method is called, the following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? ValidateTypedArray(_O_).
@@ -862,7 +861,7 @@
     <emu-clause id="sec-%typedarray%.prototype.subarray">
       <h1>%TypedArray%.prototype.subarray ( _begin_, _end_ )</h1>
       <p>Returns a new _TypedArray_ whose element type is the same as this _TypedArray_ and whose ArrayBuffer is the same as the ArrayBuffer of this _TypedArray_, referencing the elements at _begin_, inclusive, up to _end_, exclusive. If either _begin_ or _end_ is negative, it refers to an index from the end of the array, as opposed to from the beginning.</p>
-      <p>When the `subarray` method is called, the following steps are taken:</p>
+      <p>This method performs the following steps when called:</p>
       <emu-alg>
         1. Let _O_ be the *this* value.
         1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
@@ -902,7 +901,7 @@
           _target_: a TypedArray,
           _targetOffset_: a non-negative integer or +&infin;,
           _source_: a TypedArray,
-        )
+        ): either a normal completion containing ~unused~ or a throw completion
       </h1>
       <dl class="header">
         <dt>description</dt>
@@ -911,21 +910,20 @@
       <emu-alg>
         1. Assert: _source_ is an Object that has a [[TypedArrayName]] internal slot.
         1. Let _targetBuffer_ be _target_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_targetBuffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. Let _targetLength_ be <del>_target_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_target_, _getSrcBufferByteLength_)</ins>.
-        1. <ins>If _targetLength_ is ~out-of-bounds~, set _targetLength_ to 0.</ins>
+        1. <del>If IsDetachedBuffer(_targetBuffer_) is *true*, throw a *TypeError* exception.</del>
+        1. <ins>Let _getTargetBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. Let _targetLength_ be <del>_target_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_target_, _getTargetBufferByteLength_)</ins>.
+        1. <ins>If _targetLength_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. Let _srcBuffer_ be _source_.[[ViewedArrayBuffer]].
         1. <del>If IsDetachedBuffer(_srcBuffer_) is *true*, throw a *TypeError* exception.</del>
-        1. <ins>If IsIntegerIndexedObjectOutOfBounds(_target_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
-        1. Let _targetName_ be the String value of _target_.[[TypedArrayName]].
-        1. Let _targetType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _targetName_.
-        1. Let _targetElementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _targetName_.
+        1. Let _targetType_ be TypedArrayElementType(_target_).
+        1. Let _targetElementSize_ be TypedArrayElementSize(_target_).
         1. Let _targetByteOffset_ be _target_.[[ByteOffset]].
-        1. Let _srcName_ be the String value of _source_.[[TypedArrayName]].
-        1. Let _srcType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _srcName_.
-        1. Let _srcElementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _srcName_.
-        1. Let _srcLength_ be _source_.[[ArrayLength]].
+        1. Let _srcType_ be TypedArrayElementType(_source_).
+        1. Let _srcElementSize_ be TypedArrayElementSize(_source_).
+        1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
+        1. Let _srcLength_ be <del>_source_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_source_, _getSrcBufferByteLength_)</ins>.
+        1. <ins>If _srcLength_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. Let _srcByteOffset_ be _source_.[[ByteOffset]].
         1. If _targetOffset_ is +&infin;, throw a *RangeError* exception.
         1. If _srcLength_ + _targetOffset_ &gt; _targetLength_, throw a *RangeError* exception.
@@ -936,7 +934,6 @@
         1. If _same_ is *true*, then
           1. Let _srcByteLength_ be <del>_source_.[[ByteLength]]</del><ins>IntegerIndexedObjectByteLength(_source_, _getSrcBufferByteLength_)</ins>.
           1. Set _srcBuffer_ to ? CloneArrayBuffer(_srcBuffer_, _srcByteOffset_, _srcByteLength_).
-          1. NOTE: %ArrayBuffer% is used to clone _srcBuffer_ because is it known to not have any observable side-effects.
           1. Let _srcByteIndex_ be 0.
         1. Else, let _srcByteIndex_ be _srcByteOffset_.
         1. Let _targetByteIndex_ be _targetOffset_ &times; _targetElementSize_ + _targetByteOffset_.
@@ -966,49 +963,31 @@
         InitializeTypedArrayFromTypedArray (
           _O_: a TypedArray,
           _srcArray_: a TypedArray,
-        )
+        ): either a normal completion containing ~unused~ or a throw completion
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: _O_ is an Object that has a [[TypedArrayName]] internal slot.
-        1. Assert: _srcArray_ is an Object that has a [[TypedArrayName]] internal slot.
         1. Let _srcData_ be _srcArray_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.
-        1. Let _constructorName_ be the String value of _O_.[[TypedArrayName]].
-        1. Let _elementType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
+        1. <del>If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.</del>
+        1. Let _elementType_ be TypedArrayElementType(_O_).
+        1. Let _elementSize_ be TypedArrayElementSize(_O_).
         1. <ins>Let _getSrcBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _elementLength_ be <del>_srcArray_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_srcArray_, _getSrcBufferByteLength_)</ins>.
-        1. <ins>If _elementLength_ is ~out-of-bounds~, set _elementLength_ to 0.</ins>
-        1. Let _srcName_ be the String value of _srcArray_.[[TypedArrayName]].
-        1. Let _srcType_ be the Element Type value in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _srcName_.
-        1. Let _srcElementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _srcName_.
+        1. <ins>If _elementLength_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
+        1. Let _srcType_ be TypedArrayElementType(_srcArray_).
+        1. Let _srcElementSize_ be TypedArrayElementSize(_srcArray_).
         1. Let _srcByteOffset_ be _srcArray_.[[ByteOffset]].
-        1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
         1. Let _byteLength_ be _elementSize_ &times; _elementLength_.
-        1. If IsSharedArrayBuffer(_srcData_) is *false*, then
-          1. Let _bufferConstructor_ be ? SpeciesConstructor(_srcData_, %ArrayBuffer%).
-        1. Else,
-          1. Let _bufferConstructor_ be %ArrayBuffer%.
-        1. <ins>Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).</ins>
-        1. <ins>Set _getSrcBufferByteLength_ to MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. <ins>If IsIntegerIndexedObjectOutOfBounds(_srcArray_, _getSrcBufferByteLength_) is *true*, throw a *TypeError* exception.</ins>
-        1. <ins>Set _elementLength_ to IntegerIndexedObjectLength(_srcArray_, _getSrcBufferByteLength_).</ins>
-        1. <ins>Set _byteLength_ to _elementSize_ &times; _elementLength_.</ins>
         1. If _elementType_ is the same as _srcType_, then
-          1. <del>Let _data_ be ? CloneArrayBuffer(_srcData_, _srcByteOffset_, _byteLength_, _bufferConstructor_).</del>
-          1. <ins>Let _srcBlock_ be _srcData_.[[ArrayBufferData]].</ins>
-          1. <ins>Let _targetBlock_ be _data_.[[ArrayBufferData]].</ins>
-          1. <ins>Let _numBytesToCopy_ be min(_byteLength_, _data_.[[ArrayBufferByteLength]]).</ins>
-          1. <ins>Perform CopyDataBlockBytes(_targetBlock_, 0, _srcBlock_, _srcByteOffset_, _numBytesToCopy_).</ins>
+          1. Let _data_ be ? CloneArrayBuffer(_srcData_, _srcByteOffset_, _byteLength_).
         1. Else,
-          1. <del>Let _data_ be ? AllocateArrayBuffer(_bufferConstructor_, _byteLength_).</del>
-          1. <del>If IsDetachedBuffer(_srcData_) is *true*, throw a *TypeError* exception.</del>
-          1. If _srcArray_.[[ContentType]] &ne; _O_.[[ContentType]], throw a *TypeError* exception.
+          1. Let _data_ be ? <emu-meta suppress-effects="user-code">AllocateArrayBuffer(%ArrayBuffer%, _byteLength_)</emu-meta>.
+          1. If _srcArray_.[[ContentType]] ≠ _O_.[[ContentType]], throw a *TypeError* exception.
           1. Let _srcByteIndex_ be _srcByteOffset_.
           1. Let _targetByteIndex_ be 0.
           1. Let _count_ be _elementLength_.
-          1. Repeat, while _count_ &gt; 0,
+          1. Repeat, while _count_ > 0,
             1. Let _value_ be GetValueFromBuffer(_srcData_, _srcByteIndex_, _srcType_, *true*, ~Unordered~).
             1. Perform SetValueInBuffer(_data_, _targetByteIndex_, _elementType_, _value_, *true*, ~Unordered~).
             1. Set _srcByteIndex_ to _srcByteIndex_ + _srcElementSize_.
@@ -1018,6 +997,7 @@
         1. Set _O_.[[ByteLength]] to _byteLength_.
         1. Set _O_.[[ByteOffset]] to 0.
         1. Set _O_.[[ArrayLength]] to _elementLength_.
+        1. Return ~unused~.
       </emu-alg>
     </emu-clause>
 
@@ -1028,15 +1008,12 @@
           _buffer_: an ArrayBuffer or a SharedArrayBuffer,
           _byteOffset_: an ECMAScript language value,
           _length_: an ECMAScript language value,
-        )
+        ): either a normal completion containing ~unused~ or a throw completion
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Assert: _O_ is an Object that has a [[TypedArrayName]] internal slot.
-        1. Assert: _buffer_ is an Object that has an [[ArrayBufferData]] internal slot.
-        1. Let _constructorName_ be the String value of _O_.[[TypedArrayName]].
-        1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _constructorName_.
+        1. Let _elementSize_ be TypedArrayElementSize(_O_).
         1. Let _offset_ be ? ToIndex(_byteOffset_).
         1. If _offset_ modulo _elementSize_ &ne; 0, throw a *RangeError* exception.
         1. <ins>Let _bufferIsResizable_ be IsResizableArrayBuffer(_buffer_).</ins>.
@@ -1062,6 +1039,7 @@
           1. Set _O_.[[ArrayLength]] to _newByteLength_ / _elementSize_.
         1. <ins>Set _O_.[[ViewedArrayBuffer]] to _buffer_.</ins>
         1. <ins>Set _O_.[[ByteOffset]] to _offset_.</ins>
+        1. Return ~unused~.
       </emu-alg>
     </emu-clause>
   </emu-clause>
@@ -1097,7 +1075,7 @@
         IsViewOutOfBounds (
           _view_: a DataView,
           _getBufferByteLength_: an Abstract Closure,
-        )
+        ): a Boolean
       </h1>
       <dl class="header">
       </dl>
@@ -1262,16 +1240,15 @@
     <h1>
       ValidateAtomicAccess (
         _typedArray_: a TypedArray,
-        _requestIndex_: unknown,
-      )
+        _requestIndex_: an ECMAScript language value,
+      ): either a normal completion containing an integer or a throw completion
     </h1>
     <dl class="header">
     </dl>
     <emu-alg>
-      1. Assert: _typedArray_ is an Object that has a [[ViewedArrayBuffer]] internal slot.
       1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
       1. Let _length_ be <del>_typedArray_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_typedArray_, _getBufferByteLength_)</ins>.
-      1. <ins>If _length_ is ~out-of-bounds~, set _length_ to 0.</ins>
+      1. <ins>Assert: _length_ is not ~out-of-bounds~.</ins>
       1. Let _accessIndex_ be ? ToIndex(_requestIndex_).
       1. Assert: _accessIndex_ &ge; 0.
       1. If _accessIndex_ &ge; _length_, throw a *RangeError* exception.
