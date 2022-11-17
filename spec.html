@@ -676,7 +676,7 @@
         1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
         1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
         1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
-        1. If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub>.
+        1. <del>If IsDetachedBuffer(_buffer_) is *true*, return *+0*<sub>𝔽</sub></del>.
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _size_ be <del>_O_.[[ByteLength]]</del><ins>IntegerIndexedObjectByteLength(_O_, _getBufferByteLength_)</ins>.
         1. Return 𝔽(_size_).
@@ -789,7 +789,7 @@
         1. If _relativeEnd_ is -&infin;, let _final_ be 0.
         1. Else if _relativeEnd_ &lt; 0, let _final_ be max(_len_ + _relativeEnd_, 0).
         1. Else, let _final_ be min(_relativeEnd_, _len_).
-        1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, throw a *TypeError* exception.
+        1. <del>If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, throw a *TypeError* exception.</del>
         1. <ins>Set _getBufferByteLength_ to MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>Set _len_ to IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
         1. <ins>If _len_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
@@ -822,7 +822,7 @@
         1. Let _count_ be max(_final_ - _k_, 0).
         1. Let _A_ be ? TypedArraySpeciesCreate(_O_, &laquo; 𝔽(_count_) &raquo;).
         1. If _count_ &gt; 0, then
-          1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, throw a *TypeError* exception.
+          1. <del>If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, throw a *TypeError* exception.</del>
           1. <ins>Set _getBufferByteLength_ to MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
           1. <ins>Set _len_ to IntegerIndexedObjectLength(_O_, _getBufferByteLength_).</ins>
           1. <ins>If _len_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
