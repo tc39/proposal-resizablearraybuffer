@@ -307,9 +307,10 @@
         1. Let _copyLength_ be min(_newByteLength_, _O_.[[ArrayBufferByteLength]]).
         1. Let _fromBlock_ be _O_.[[ArrayBufferData]].
         1. Let _toBlock_ be _new_.[[ArrayBufferData]].
-        1. Perform CopyDataBlockBytes(_toBlock_, 0, _fromBlock_, 0, _copyLength_).
+        1. [id="step-transfer-copy-bytes"] Perform CopyDataBlockBytes(_toBlock_, 0, _fromBlock_, 0, _copyLength_).
         1. NOTE: Neither creation of the new Data Block nor copying from the old Data Block are observable. Implementations reserve the right to implement this method as a zero-copy move or a `realloc`.
         1. Perform ? DetachArrayBuffer(_O_).
+        1. NOTE: This will throw if _O_.[[ArrayBufferDetachKey]] is not undefined. The new ArrayBuffer is not yet observable at this point. If an implementation chooses to copy, it is free to check _O_.[[ArrayBufferDetachKey]] and throw before performing the copy in step <emu-xref href="#step-transfer-copy-bytes"></emu-xref>.
         1. Return _new_.
       </emu-alg>
       <emu-note>
