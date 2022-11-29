@@ -8,7 +8,7 @@ Champion: Shu-yu Guo (@syg)
 
 ## Introduction
 
-`ArrayBuffer`s have enabled in-memory handling of binary data and have enjoyed great success. This proposal extends the `ArrayBuffer` constructors to take an additional maximum length that allows in-place growth and shrinking of buffers. Similarly, `SharedArrayBuffer` is extended to take an additional maximum length that allows in-place growth. The `transfer` method is also re-introduced here as a standard way to detach `ArrayBuffer`s, perform zero-copy moves, and to "fix" resizable `ArrayBuffer` instances to `ArrayBuffer` instances.
+`ArrayBuffer`s have enabled in-memory handling of binary data and have enjoyed great success. This proposal extends the `ArrayBuffer` constructors to take an additional maximum length that allows in-place growth and shrinking of buffers. Similarly, `SharedArrayBuffer` is extended to take an additional maximum length that allows in-place growth.
 
 ## Motivation and use cases
 
@@ -62,19 +62,6 @@ class ArrayBuffer {
   // - Throws a RangeError if byteLength > maxByteLength.
   constructor(byteLength [, options ]);
 
-  // Returns a *non*-resizable ArrayBuffer with the same byte content
-  // at this buffer for [0, min(this.byteLength, newByteLength)],
-  // then detaches this buffer.
-  //
-  // Any new memory is zeroed.
-  //
-  // If newByteLength is undefined, it is set to this.bytelength.
-  //
-  // Designed to be implementable as a copy-free move or a realloc.
-  //
-  // Throws a RangeError unless 0 <= newByteLength.
-  transfer(newByteLength);
-
   // Resizes the buffer.
   //
   // Grows are designed to be implemented in-place, i.e. address space is
@@ -107,30 +94,6 @@ class ArrayBuffer {
   // No setter.
   get byteLength();
 }
-```
-
-`ArrayBuffer#transfer` may be used to "fix" resizable buffers in a zero-copy move to normal `ArrayBuffer`s.
-
-Example:
-
-```javascript
-let rab = new ArrayBuffer(1024, { maxByteLength: 1024 ** 2 });
-assert(rab.byteLength === 1024);
-assert(rab.maxByteLength === 1024 ** 2);
-assert(rab.resizable);
-
-rab.resize(rab.byteLength * 2);
-assert(rab.byteLength === 1024 * 2);
-
-// Transfer the first 1024 bytes.
-let ab = rab.transfer(1024);
-// rab is now detached
-assert(rab.byteLength === 0);
-assert(rab.maxByteLength === 0);
-
-// The contents are moved to ab.
-assert(!ab.resizable);
-assert(ab.byteLength === 1024);
 ```
 
 ### `SharedArrayBuffer`
@@ -291,10 +254,6 @@ Growing a growable `SharedArrayBuffer` performs a SeqCst access on the buffer le
 
 This aligns with WebAssembly as well as enable more optimization opportunities for bounds checking codegen. It also means that other threads are not guaranteed to see the grown length without synchronizing on an explicit length access, such as by reading the `byteLength` accessor.
 
-### Is `transfer` realloc?
-
-Yes, with detach semantics.
-
 ## Open questions
 
 ### Should `resize(0)` be allowed?
@@ -303,9 +262,9 @@ Yes, with detach semantics.
 
 https://github.com/tc39/proposal-resizablearraybuffer/issues/22 points out that `ArrayBuffer(0)` is already a thing. This proposal thus allows `resize(0)`.
 
-### Should there be a `transferResizable()` that reallocs into another resizable `ArrayBuffer`?
+### What happened to `transfer()`? It used to be here.
 
-Are there compelling use cases for this?
+It has been separated into its own proposal to further explore the design space. New proposal repo TBD.
 
 ## History and acknowledgment
 
