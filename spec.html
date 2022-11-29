@@ -641,6 +641,29 @@
       1. Return *false*.
     </emu-alg>
   </emu-clause>
+
+  <emu-clause id="sec-isarraybufferviewoutofbounds" type="abstract operation">
+    <h1>
+      IsArrayBufferViewOutOfBounds(
+        _O_: an Integer-Indexed exotic object or a DataView,
+      ): a Boolean
+    </h1>
+    <dl class="header">
+      <dt>description</dt>
+      <dd>It checks if either any of a TypedArray's numeric properties or a DataView object's methods can reference a value at an index not contained within the underlying data block's bounds. This abstract operation exists as a convenience for upstream specifications.</dd>
+    </dl>
+    <emu-alg>
+      1. Let _buffer_ be _O_.[[ViewedArrayBuffer]].
+      1. If IsDetachedBuffer(_buffer_) is *true*, return *true*.
+      1. Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).
+      1. If IsSharedArrayBuffer(_buffer_) is *true*, then
+        1. Assert: If _O_ has a [[DataView]] internal slot, IsViewOutOfBounds(_O_, _getBufferByteLength_) is *false*. Else, IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_) is *false*.
+        1. NOTE: SharedArrayBuffers can only grow, and views on it cannot go out of bounds after construction. This is special-cased in this operation to avoid shared memory loads of the buffer's byte length, which are not necessary for this check.
+        1. Return *false*.
+      1. If _O_ has a [[DataView]] internal slot, return IsViewOutOfBounds(_O_, _getBufferByteLength_).
+      1. Return IsIntegerIndexedObjectOutOfBounds(_O_, _getBufferByteLength_).
+    </emu-alg>
+  </emu-clause>
   </ins>
 </emu-clause>
 
