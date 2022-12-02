@@ -231,6 +231,10 @@ This security risk is intrinsic to the proposal and is not entirely eliminable. 
 
 ## FAQ and design rationale tradeoffs
 
+### What happened to `transfer()`? It used to be here.
+
+It has been separated into its [own proposal](https://github.com/syg/proposal-arraybuffer-transfer) to further explore the design space.
+
 ### Why not retrofit all `ArrayBuffer`s to be resizable?
 
 Retrofitting the single-parameter `ArrayBuffer` instead of adding an explicit opt-in overload is hard because of both language and implementation concerns:
@@ -261,10 +265,6 @@ This aligns with WebAssembly as well as enable more optimization opportunities f
 ~~Currently a length of 0 always denotes a detached buffer. Are there use cases for `resize(0)`? Should it mean detach if allowed? Or should the buffer be allowed to grow again afterwards?~~
 
 https://github.com/tc39/proposal-resizablearraybuffer/issues/22 points out that `ArrayBuffer(0)` is already a thing. This proposal thus allows `resize(0)`.
-
-### What happened to `transfer()`? It used to be here.
-
-It has been separated into its own proposal to further explore the design space. New proposal repo TBD.
 
 ## History and acknowledgment
 
