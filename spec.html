@@ -78,7 +78,7 @@
     <emu-clause id="sec-arraybufferlength" type="abstract operation">
       <h1>
         ArrayBufferByteLength (
-          _arrayBuffer_: an ArrayBuffer,
+          _arrayBuffer_: an ArrayBuffer or SharedArrayBuffer,
           _order_: ~SeqCst~ or ~Unordered~,
         ): a non-negative integer
       </h1>
@@ -120,7 +120,7 @@
     <emu-clause id="sec-isresizablearraybuffer" type="abstract operation">
       <h1>
         IsResizableArrayBuffer (
-          _arrayBuffer_: an ArrayBuffer,
+          _arrayBuffer_: an ArrayBuffer or a SharedArrayBuffer,
         ): a Boolean
       </h1>
       <dl class="header">
