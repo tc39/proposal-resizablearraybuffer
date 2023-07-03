@@ -1258,7 +1258,7 @@
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _typedArray_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>Let _length_ be IntegerIndexedObjectLength(_typedArray_, _getBufferByteLength_).</ins>
-        1. <ins>If ~length~ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
+        1. <ins>If _length_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. <ins>If _indexedPosition_ &ge; _length_, throw a *RangeError* exception.</ins>
         1. NOTE: The above check<ins>s</ins> <del>is</del><ins>are</ins> not redundant with the check<ins>s</ins> in ValidateIntegerTypedArray <ins>and ValidateAtomicAccess</ins> because the call to ToBigInt or ToIntegerOrInfinity on the preceding lines can have arbitrary side effects, which could cause the buffer to become detached. <ins>These checks are only needed when _typedArray_'s backing buffer is an ArrayBuffer.</ins>
         1. Let _elementType_ be TypedArrayElementType(_typedArray_).
@@ -1300,7 +1300,7 @@
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _typedArray_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>Let _length_ be IntegerIndexedObjectLength(_typedArray_, _getBufferByteLength_).</ins>
-        1. <ins>If ~length~ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
+        1. <ins>If _length_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. <ins>If _indexedPosition_ &ge; _length_, throw a *RangeError* exception.</ins>
         1. Let _elementType_ be TypedArrayElementType(_typedArray_).
         1. Perform SetValueInBuffer(_buffer_, _indexedPosition_, _elementType_, _v_, *true*, ~SeqCst~).
@@ -1334,7 +1334,7 @@
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~Unordered~).</ins>
         1. <ins>NOTE: Bounds checking is not a synchronizing operation when _typedArray_'s backing buffer is a growable SharedArrayBuffer.</ins>
         1. <ins>Let _length_ be IntegerIndexedObjectLength(_typedArray_, _getBufferByteLength_).</ins>
-        1. <ins>If ~length~ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
+        1. <ins>If _length_ is ~out-of-bounds~, throw a *TypeError* exception.</ins>
         1. <ins>If _indexedPosition_ &ge; _length_, throw a *RangeError* exception.</ins>
         1. NOTE: The above check<ins>s</ins> <del>is</del><ins>are</ins> not redundant with the check<ins>s</ins> in ValidateIntegerTypedArray <ins>and ValidateAtomicAccess</ins> because the call to ToBigInt or ToIntegerOrInfinity on the preceding lines can have arbitrary side effects, which could cause the buffer to become detached. <ins>These checks are only needed when _typedArray_'s backing buffer is an ArrayBuffer.</ins>
         1. Let _elementType_ be TypedArrayElementType(_typedArray_).
