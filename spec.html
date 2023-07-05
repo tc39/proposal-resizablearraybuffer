@@ -1185,8 +1185,7 @@
           1. If _offset_ + _viewByteLength_ &gt; _bufferByteLength_, throw a *RangeError* exception.
         1. Let _O_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%DataView.prototype%"*, &laquo; [[DataView]], [[ViewedArrayBuffer]], [[ByteLength]], [[ByteOffset]] &raquo;).
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
-        1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
-        1. <ins>Set _bufferByteLength_ be _getBufferByteLength_(_buffer_).</ins>
+        1. <ins>Set _bufferByteLength_ be ArrayBufferByteLength(_buffer_, ~SeqCst~).</ins>
         1. <ins>If _offset_ &gt; _bufferByteLength_, throw a *RangeError* exception.</ins>
         1. <ins>If _byteLengthChecked_ is not ~empty~, then</ins>
           1. <ins>If _offset_ + _viewByteLength_ &gt; _bufferByteLength_, throw a *RangeError* exception.</ins>
