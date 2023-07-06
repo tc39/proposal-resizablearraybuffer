@@ -742,8 +742,8 @@
           1. If <del>IsDetachedBuffer(_buffer_) is *true*</del><ins>_len_ is ~out-of-bounds~</ins>, throw a *TypeError* exception.
           1. Let _typedArrayName_ be the String value of _O_.[[TypedArrayName]].
           1. Let _elementSize_ be the Element Size value specified in <emu-xref href="#table-the-typedarray-constructors"></emu-xref> for _typedArrayName_.
-          1. <ins>Let _bufferByteLen_ be _len_ &times; _elementSize_.</ins>
           1. Let _byteOffset_ be _O_.[[ByteOffset]].
+          1. <ins>Let _bufferByteLimit_ be _len_ &times; _elementSize_ + _byteOffset_.</ins>
           1. Let _toByteIndex_ be _to_ &times; _elementSize_ + _byteOffset_.
           1. Let _fromByteIndex_ be _from_ &times; _elementSize_ + _byteOffset_.
           1. Let _countBytes_ be _count_ &times; _elementSize_.
@@ -754,7 +754,7 @@
           1. Else,
             1. Let _direction_ be 1.
           1. Repeat, while _countBytes_ &gt; 0,
-            1. <ins>If _fromByteIndex_ &lt; _bufferByteLen_ and _toByteIndex_ &lt; _bufferByteLen_, then</ins>
+            1. <ins>If _fromByteIndex_ &lt; _bufferByteLimit_ and _toByteIndex_ &lt; _bufferByteLimit_, then</ins>
               1. Let _value_ be GetValueFromBuffer(_buffer_, _fromByteIndex_, ~Uint8~, *true*, ~Unordered~).
               1. Perform SetValueInBuffer(_buffer_, _toByteIndex_, ~Uint8~, _value_, *true*, ~Unordered~).
               1. Set _fromByteIndex_ to _fromByteIndex_ + _direction_.
