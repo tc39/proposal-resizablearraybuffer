@@ -806,6 +806,7 @@
         1. Perform ? ValidateTypedArray(_O_).
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. Let _len_ be <del>_O_.[[ArrayLength]]</del><ins>IntegerIndexedObjectLength(_O_, _getBufferByteLength_)</ins>.
+        1. <ins>Assert: _len_ is not ~out-of-bounds~.</ins>
         1. Let _relativeStart_ be ? ToIntegerOrInfinity(_start_).
         1. If _relativeStart_ is -&infin;, let _k_ be 0.
         1. Else if _relativeStart_ &lt; 0, let _k_ be max(_len_ + _relativeStart_, 0).
@@ -842,7 +843,7 @@
             1. Let _srcByteOffset_ be _O_.[[ByteOffset]].
             1. Let _targetByteIndex_ be _A_.[[ByteOffset]].
             1. Let _srcByteIndex_ be (_k_ &times; _elementSize_) + _srcByteOffset_.
-            1. Let _limit_ be <ins>min(</ins>_targetByteIndex_ + _count_ &times; _elementSize_<ins>, _len_ &times; _elementSize_)</ins>.
+            1. Let _limit_ be _targetByteIndex_ + <ins>min(</ins>_count_<ins>, _len_)</ins> &times; _elementSize_.
             1. Repeat, while _targetByteIndex_ &lt; _limit_,
               1. Let _value_ be GetValueFromBuffer(_srcBuffer_, _srcByteIndex_, ~Uint8~, *true*, ~Unordered~).
               1. Perform SetValueInBuffer(_targetBuffer_, _targetByteIndex_, ~Uint8~, _value_, *true*, ~Unordered~).
