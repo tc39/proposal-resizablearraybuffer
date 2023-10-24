@@ -1175,21 +1175,21 @@
         1. Let _bufferByteLength_ be <del>_buffer_.[[ArrayBufferByteLength]]</del><ins>ArrayBufferByteLength(_buffer_, ~SeqCst~)</ins>.
         1. If _offset_ &gt; _bufferByteLength_, throw a *RangeError* exception.
         1. <ins>Let _bufferIsResizable_ be IsResizableArrayBuffer(_buffer_).</ins>
-        1. <ins>Let _byteLengthChecked_ be ~empty~.</ins>
+        1. <ins>Let _byteLengthChecked_ be *false*.</ins>
         1. <ins>If _bufferIsResizable_ is *true* and _byteLength_ is *undefined*, then</ins>
           1. <ins>Let _viewByteLength_ be ~auto~.</ins>
         1. <del>If</del><ins>Else if</ins> _byteLength_ is *undefined*, then
           1. Let _viewByteLength_ be _bufferByteLength_ - _offset_.
         1. Else,
-          1. <ins>Set _byteLengthChecked_ to ? ToIndex(_byteLength_)</ins>.
-          1. Let _viewByteLength_ be <del>? ToIndex(_byteLength_)</del><ins>_byteLengthChecked_</ins>.
+          1. <ins>Set _byteLengthChecked_ to *true*.</ins>
+          1. Let _viewByteLength_ be ? ToIndex(_byteLength_).
           1. If _offset_ + _viewByteLength_ &gt; _bufferByteLength_, throw a *RangeError* exception.
         1. Let _O_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%DataView.prototype%"*, &laquo; [[DataView]], [[ViewedArrayBuffer]], [[ByteLength]], [[ByteOffset]] &raquo;).
         1. If IsDetachedBuffer(_buffer_) is *true*, throw a *TypeError* exception.
         1. <ins>Let _getBufferByteLength_ be MakeIdempotentArrayBufferByteLengthGetter(~SeqCst~).</ins>
         1. <ins>Set _bufferByteLength_ be _getBufferByteLength_(_buffer_).</ins>
         1. <ins>If _offset_ &gt; _bufferByteLength_, throw a *RangeError* exception.</ins>
-        1. <ins>If _byteLengthChecked_ is not ~empty~, then</ins>
+        1. <ins>If _byteLengthChecked_ is *true*, then</ins>
           1. <ins>If _offset_ + _viewByteLength_ &gt; _bufferByteLength_, throw a *RangeError* exception.</ins>
         1. Set _O_.[[ViewedArrayBuffer]] to _buffer_.
         1. Set _O_.[[ByteLength]] to _viewByteLength_.
