@@ -1,6 +1,6 @@
 # In-Place Resizable and Growable `ArrayBuffer`s
 
-Stage: 3
+Stage: 4, [landed in the specification](https://github.com/tc39/ecma262/pull/3116).
 
 Author: Shu-yu Guo (@syg)
 
